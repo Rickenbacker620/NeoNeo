@@ -2,10 +2,10 @@
 #include <ctre.hpp>
 #include <format>
 
-void *HookAddress::GetAddress() const
+address_t HookAddress::GetAddress() const
 {
     auto handle = GetModuleHandle(std::string{module}.c_str());
-    AddressPtr result{};
+    address_t result{};
     if (function.data())
     {
         result = GetProcAddress(handle, std::string{function}.c_str());
@@ -17,17 +17,17 @@ void *HookAddress::GetAddress() const
     return result + offset;
 }
 
-void Hook::Send(AddressPtr dwDatabase)
+void Hook::Send(address_t dwDatabase)
 {
-    std::cout << dwDatabase << std::endl;
-    // auto addr = (uintptr_t)GetHookAddress();
-    // uintptr_t data_addr{};
-    // uintptr_t context{};
-    // data_addr = *(uintptr_t *)(dwDatabase + inst_.data.first);
-    // if (inst_.data.second.has_value()) {
-    //     data_addr = data_addr + inst_.data.second.value();
-    // }
-    // std::cout << std::format("Data at{} || Context is {}") << std::endl;
+    auto addr = GetHookAddress();
+    address_t data_addr{};
+    address_t context{};
+    data_addr = *(dwDatabase + inst_.data.first);
+
+    if (inst_.data.second.has_value()) {
+        data_addr = data_addr + inst_.data.second.value();
+    }
+    std::cout << std::format("Data at{} || Context is", uintptr_t(addr)) << *data_addr << std::endl;
 }
 
 bool Hook::Attach()
@@ -69,7 +69,7 @@ bool Hook::Attach()
     // return ConsoleOutput(MH_StatusToString(error)), false;
 
     using HookThisType = Hook *;
-    using HookSendType = void (Hook::*)(AddressPtr);
+    using HookSendType = void (Hook::*)(address_t);
     *reinterpret_cast<HookThisType *>(common_hook + this_offset) = this;
     *reinterpret_cast<HookSendType *>(common_hook + send_offset) = &Hook::Send;
 

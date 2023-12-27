@@ -27,10 +27,10 @@ struct HookInstructor
 
 struct HookAddress
 {
-    AddressPtr offset{};
+    address_t offset{};
     std::string_view module{};
     std::string_view function{};
-    void *GetAddress() const;
+    address_t GetAddress() const;
 };
 
 namespace hookcode
@@ -115,7 +115,7 @@ class Hook
     HookInstructor inst_{};
 
     BYTE trampoline[40]{};
-    void *GetHookAddress()
+    address_t GetHookAddress()
     {
         return addr_.GetAddress();
     };
@@ -129,7 +129,7 @@ class Hook
         inst_ = hookcode::ParseInstructor(result.get<2>());
         addr_ = hookcode::ParseAddress(result.get<3>());
     };
-    void Send(AddressPtr dwDatabase);
+    void Send(address_t dwDatabase);
     bool Attach();
     void Detach();
 };

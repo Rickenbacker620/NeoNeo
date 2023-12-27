@@ -234,50 +234,50 @@ void Localize();
 #endif
 
 
-class AddressPtr {
+class address_t {
 private:
     uintptr_t address;
 
 public:
-    constexpr AddressPtr() : address(0) {}
+    constexpr address_t() : address(0) {}
 
-    constexpr AddressPtr(uintptr_t addr) : address(addr) {}
+    constexpr address_t(uintptr_t addr) : address(addr) {}
 
-    constexpr AddressPtr(void* ptr) : address(std::bit_cast<uintptr_t>(ptr)) {}
+    constexpr address_t(void* ptr) : address(std::bit_cast<uintptr_t>(ptr)) {}
 
-    constexpr AddressPtr& operator=(void* ptr) {
+    constexpr address_t& operator=(void* ptr) {
         address = std::bit_cast<uintptr_t>(ptr);
         return *this;
     }
 
-    constexpr AddressPtr& operator=(uintptr_t addr) {
+    constexpr address_t& operator=(uintptr_t addr) {
         address = addr;
         return *this;
     }
 
-    constexpr AddressPtr operator+(intptr_t offset) const {
-        return AddressPtr(address + offset);
+    constexpr address_t operator+(intptr_t offset) const {
+        return address_t(address + offset);
     }
 
-    constexpr AddressPtr operator+(uintptr_t offset) const {
-        return AddressPtr(address + offset);
+    constexpr address_t operator+(uintptr_t offset) const {
+        return address_t(address + offset);
     }
 
-    constexpr AddressPtr operator-(intptr_t offset) const {
-        return AddressPtr(address - offset);
+    constexpr address_t operator-(intptr_t offset) const {
+        return address_t(address - offset);
     }
 
-    constexpr AddressPtr& operator+=(intptr_t offset) {
+    constexpr address_t& operator+=(intptr_t offset) {
         address += offset;
         return *this;
     }
 
-    constexpr AddressPtr& operator-=(intptr_t offset) {
+    constexpr address_t& operator-=(intptr_t offset) {
         address -= offset;
         return *this;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const AddressPtr& addr) {
+    friend std::ostream& operator<<(std::ostream& os, const address_t& addr) {
         os << std::uppercase << std::hex << std::setfill('0') << std::setw(sizeof(std::uintptr_t) * 2) << addr.address << std::dec;
         return os;
     }
@@ -288,5 +288,9 @@ public:
 
     constexpr operator uintptr_t() const {
         return address;
+    }
+
+    constexpr operator address_t*() const {
+        return std::bit_cast<address_t*>(address);
     }
 };
