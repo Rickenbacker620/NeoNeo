@@ -1,24 +1,33 @@
 #include "hook.h"
 #include <ctre.hpp>
+#include <format>
 
 void *HookAddress::GetAddress() const
 {
     auto handle = GetModuleHandle(std::string{module}.c_str());
-    uintptr_t result = 0;
+    AddressPtr result{};
     if (function.data())
     {
-        result = reinterpret_cast<uintptr_t>(GetProcAddress(handle, std::string{function}.c_str()));
+        result = GetProcAddress(handle, std::string{function}.c_str());
     }
     else
     {
-        result = reinterpret_cast<uintptr_t>(handle);
+        result = handle;
     }
-    return reinterpret_cast<void *>(result + offset);
+    return result + offset;
 }
 
-void Hook::Send(uintptr_t dwDatabase)
+void Hook::Send(AddressPtr dwDatabase)
 {
-    std::cout << std::hex << dwDatabase << "Got Message" << std::endl;
+    std::cout << dwDatabase << std::endl;
+    // auto addr = (uintptr_t)GetHookAddress();
+    // uintptr_t data_addr{};
+    // uintptr_t context{};
+    // data_addr = *(uintptr_t *)(dwDatabase + inst_.data.first);
+    // if (inst_.data.second.has_value()) {
+    //     data_addr = data_addr + inst_.data.second.value();
+    // }
+    // std::cout << std::format("Data at{} || Context is {}") << std::endl;
 }
 
 bool Hook::Attach()
@@ -50,18 +59,28 @@ bool Hook::Attach()
 
     while ((error = MH_CreateHook(address, trampoline, &original)) != MH_OK)
         if (error == MH_ERROR_ALREADY_CREATED)
-            // RemoveHook((uintptr_t)address_);
-            std::cout << "error1" << std::endl;
+        {
+            MH_DisableHook(address);
+            MH_RemoveHook(address);
+            std::cout << "hook conflict, removing existing hook" << std::endl;
+        }
         else
             std::cout << MH_StatusToString(error) << address << std::endl << this->trampoline << std::endl;
     // return ConsoleOutput(MH_StatusToString(error)), false;
 
     using HookThisType = Hook *;
-    using HookSendType = void (Hook::*)(uintptr_t);
+    using HookSendType = void (Hook::*)(AddressPtr);
     *reinterpret_cast<HookThisType *>(common_hook + this_offset) = this;
     *reinterpret_cast<HookSendType *>(common_hook + send_offset) = &Hook::Send;
 
     *(void **)(common_hook + original_offset) = original;
     memcpy(trampoline, common_hook, sizeof(common_hook));
     return MH_EnableHook(address) == MH_OK;
+}
+
+void Hook::Detach()
+{
+    auto address = GetHookAddress();
+    MH_DisableHook(address);
+    MH_RemoveHook(address);
 }

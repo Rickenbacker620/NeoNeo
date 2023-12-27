@@ -1,28 +1,29 @@
 #pragma once
 
+#include <MinHook.h>
 #include <Windows.h>
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <bit>
 #include <cassert>
 #include <concrt.h>
 #include <cstdint>
 #include <deque>
 #include <filesystem>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <regex>
 #include <ranges>
+#include <regex>
 #include <string>
 #include <thread>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-#include <iostream>
 #include <vector>
-#include <MinHook.h>
 
 #ifdef _WIN64
 constexpr bool x64 = true;
@@ -231,3 +232,61 @@ void Localize();
 #else
 #define TEST(...)
 #endif
+
+
+class AddressPtr {
+private:
+    uintptr_t address;
+
+public:
+    constexpr AddressPtr() : address(0) {}
+
+    constexpr AddressPtr(uintptr_t addr) : address(addr) {}
+
+    constexpr AddressPtr(void* ptr) : address(std::bit_cast<uintptr_t>(ptr)) {}
+
+    constexpr AddressPtr& operator=(void* ptr) {
+        address = std::bit_cast<uintptr_t>(ptr);
+        return *this;
+    }
+
+    constexpr AddressPtr& operator=(uintptr_t addr) {
+        address = addr;
+        return *this;
+    }
+
+    constexpr AddressPtr operator+(intptr_t offset) const {
+        return AddressPtr(address + offset);
+    }
+
+    constexpr AddressPtr operator+(uintptr_t offset) const {
+        return AddressPtr(address + offset);
+    }
+
+    constexpr AddressPtr operator-(intptr_t offset) const {
+        return AddressPtr(address - offset);
+    }
+
+    constexpr AddressPtr& operator+=(intptr_t offset) {
+        address += offset;
+        return *this;
+    }
+
+    constexpr AddressPtr& operator-=(intptr_t offset) {
+        address -= offset;
+        return *this;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const AddressPtr& addr) {
+        os << std::uppercase << std::hex << std::setfill('0') << std::setw(sizeof(std::uintptr_t) * 2) << addr.address << std::dec;
+        return os;
+    }
+
+    constexpr operator void*() const {
+        return std::bit_cast<void*>(address);
+    }
+
+    constexpr operator uintptr_t() const {
+        return address;
+    }
+};

@@ -17,7 +17,7 @@ enum HookAttribute : uint16_t
     NO_CONTEXT = 1 << 6, // Indicates the use of Unicode (wchar_t or wchar_t*)
 };
 
-using OffsetType = std::pair<int, std::optional<int>>;
+using OffsetType = std::pair<intptr_t, std::optional<intptr_t>>;
 
 struct HookInstructor
 {
@@ -27,7 +27,7 @@ struct HookInstructor
 
 struct HookAddress
 {
-    uintptr_t offset{};
+    AddressPtr offset{};
     std::string_view module{};
     std::string_view function{};
     void *GetAddress() const;
@@ -129,8 +129,9 @@ class Hook
         inst_ = hookcode::ParseInstructor(result.get<2>());
         addr_ = hookcode::ParseAddress(result.get<3>());
     };
-    void Send(uintptr_t dwDatabase);
+    void Send(AddressPtr dwDatabase);
     bool Attach();
+    void Detach();
 };
 
 consteval Hook operator"" _hcode(const char *hcode, std::size_t)
