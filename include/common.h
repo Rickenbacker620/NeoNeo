@@ -14,6 +14,7 @@
 #include <mutex>
 #include <optional>
 #include <regex>
+#include <ranges>
 #include <string>
 #include <thread>
 #include <tuple>

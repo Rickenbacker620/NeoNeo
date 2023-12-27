@@ -14,7 +14,14 @@ FetchContent_Declare(
     GIT_SHALLOW 1
 )
 
-FetchContent_MakeAvailable(minhook)
+FetchContent_Declare(
+    ctre
+    GIT_REPOSITORY https://github.com/hanickadot/compile-time-regular-expressions.git
+    GIT_TAG v3.8.1
+    GIT_SHALLOW 1
+)
+
+FetchContent_MakeAvailable(minhook ctre)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
