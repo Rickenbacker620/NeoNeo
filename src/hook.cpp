@@ -17,42 +17,50 @@ address_t HookAddress::GetAddress() const
     return result + offset;
 }
 
-size_t Hook::GetTextLength()
+size_t Hook::GetTextLength(address_t text_addr)
 {
     size_t len{};
-    switch (inst_.length)
-    {
-    case 0:
-        len = std::strlen(std::bit_cast<const char*>(data_addr_));
-        break;
-    case 1:
-        len = 1;
-    default:
-        break;
+    if (hook_attr_ & USING_STRING) {
+        return std::strlen(std::bit_cast<const char*>(text_addr));
+    } else {
+        return 1;
     }
     return len;
+}
+
+address_t Hook::GetTextAddress(address_t base)
+{
+    address_t address{};
+    // get data address
+    address = *(base + hook_inst_.data_off.first);
+    if (hook_inst_.data_off.second.has_value())
+    {
+        address = *(address + hook_inst_.data_off.second.value());
+    }
+    return address;
+}
+
+address_t Hook::GetTextContext(address_t base)
+{
+    address_t context{};
+
+    context = *(base);
+    if (hook_inst_.context_off.has_value())
+    {
+        context = *(context + hook_inst_.context_off.value().first);
+    }
+    return context;
 }
 
 void Hook::Send(address_t base)
 {
     auto hook_addr = hook_addr_.GetAddress();
-    base_addr_ = base;
+    auto text_address = GetTextAddress(base);
+    auto text_context = GetTextContext(base);
 
-    // get data address
-    data_addr_ = *(base_addr_ + inst_.data.first);
-    if (inst_.data.second.has_value())
-    {
-        data_addr_ = *(data_addr_ + inst_.data.second.value());
-    }
-
-    // get context
-    context_ = *(base_addr_);
-    if (inst_.context.has_value())
-    {
-        context_ = *(context_ + inst_.context.value().first);
-    }
-
-    inst_.length = GetTextLength();
+    char buffer[1000];
+    auto text_length = GetTextLength(text_address);
+    std::memcpy(buffer, text_address, text_length);
 }
 
 bool Hook::Attach()

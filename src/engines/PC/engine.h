@@ -19,7 +19,8 @@
 class PCEngine : public Engine
 {
   private:
-    constexpr static Hook kernel32_hooks_[]{"HS4@0:kernel32.dll:lstrlenA"_hcode};
+    // constexpr static Hook kernel32_hooks_[]{"HS8@0:kernel32.dll:lstrcpyA"_hcode};
+    constexpr static Hook kernel32_hooks_[]{"HS1:2@0:kernel32.dll:lstrlenA"_hcode};
                                             // "HS8@0:kernel32.dll:lstrcpyA"_hcode,
                                             // "HS8@0:kernel32.dll:lstrcpynA"_hcode,
                                             // "HQ4@0:kernel32.dll:lstrlenW"_hcode,
