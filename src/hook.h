@@ -21,8 +21,10 @@ using OffsetType = std::pair<intptr_t, std::optional<intptr_t>>;
 
 struct HookInstructor
 {
+    uint16_t attribute;
     OffsetType data{};
     std::optional<OffsetType> context{};
+    size_t length;
 };
 
 struct HookAddress
@@ -81,7 +83,7 @@ constexpr uint16_t ParseAttribute(std::string_view attribute)
     return hattr;
 }
 
-constexpr HookInstructor ParseInstructor(std::string_view instructor)
+constexpr HookInstructor ParseInstructor(std::string_view instructor, uint16_t attr)
 {
     auto result =
         ctre::match<R"(^(-?[[:xdigit:]]+)(?:\*(-?[[:xdigit:]]+))?(?::(-?[[:xdigit:]]+))?(?:\*(-?[[:xdigit:]]+))?$)">(
@@ -96,7 +98,17 @@ constexpr HookInstructor ParseInstructor(std::string_view instructor)
     {
         context = {std::nullopt};
     }
-    return HookInstructor{data, context};
+
+    size_t len{};
+    if (attr & USING_STRING)
+    {
+        len = 0;
+    }
+    else
+    {
+        len = 1;
+    }
+    return HookInstructor{attr, data, context, len};
 }
 
 constexpr HookAddress ParseAddress(std::string_view address)
@@ -109,25 +121,24 @@ constexpr HookAddress ParseAddress(std::string_view address)
 class Hook
 {
   private:
-    uint16_t attr_{};
-    HookAddress addr_{};
-
+    HookAddress hook_addr_{};
     HookInstructor inst_{};
-
     BYTE trampoline[40]{};
-    address_t GetHookAddress()
-    {
-        return addr_.GetAddress();
-    };
+
+    address_t base_addr_{};
+    address_t data_addr_{}; // target text start address
+    address_t context_{};   // an address unique to every text call
+
+    size_t GetTextLength();
 
   public:
-    constexpr Hook(HookAddress addr, HookInstructor inst) : addr_{addr}, inst_{inst} {};
+    constexpr Hook(HookAddress addr, HookInstructor inst) : hook_addr_{addr}, inst_{inst} {};
     constexpr Hook(std::string_view hcode)
     {
         auto result = ctre::match<R"(^\\?H([ABWHSQVM]N?)(.*)@(.*)$)">(hcode);
-        attr_ = hookcode::ParseAttribute(result.get<1>());
-        inst_ = hookcode::ParseInstructor(result.get<2>());
-        addr_ = hookcode::ParseAddress(result.get<3>());
+        auto attr = hookcode::ParseAttribute(result.get<1>());
+        inst_ = hookcode::ParseInstructor(result.get<2>(), attr);
+        hook_addr_ = hookcode::ParseAddress(result.get<3>());
     };
     void Send(address_t dwDatabase);
     bool Attach();

@@ -17,17 +17,42 @@ address_t HookAddress::GetAddress() const
     return result + offset;
 }
 
-void Hook::Send(address_t dwDatabase)
+size_t Hook::GetTextLength()
 {
-    auto addr = GetHookAddress();
-    address_t data_addr{};
-    address_t context{};
-    data_addr = *(dwDatabase + inst_.data.first);
-
-    if (inst_.data.second.has_value()) {
-        data_addr = data_addr + inst_.data.second.value();
+    size_t len{};
+    switch (inst_.length)
+    {
+    case 0:
+        len = std::strlen(std::bit_cast<const char*>(data_addr_));
+        break;
+    case 1:
+        len = 1;
+    default:
+        break;
     }
-    std::cout << std::format("Data at{} || Context is", uintptr_t(addr)) << *data_addr << std::endl;
+    return len;
+}
+
+void Hook::Send(address_t base)
+{
+    auto hook_addr = hook_addr_.GetAddress();
+    base_addr_ = base;
+
+    // get data address
+    data_addr_ = *(base_addr_ + inst_.data.first);
+    if (inst_.data.second.has_value())
+    {
+        data_addr_ = *(data_addr_ + inst_.data.second.value());
+    }
+
+    // get context
+    context_ = *(base_addr_);
+    if (inst_.context.has_value())
+    {
+        context_ = *(context_ + inst_.context.value().first);
+    }
+
+    inst_.length = GetTextLength();
 }
 
 bool Hook::Attach()
@@ -38,7 +63,7 @@ bool Hook::Attach()
         0x9c, // pushfd ; Artikash 11/4/2018: not sure why pushfd happens twice. Anyway, after this a total of 0x28
               // bytes are pushed
         0x8d, 0x44, 0x24, 0x28, // lea eax,[esp+0x28]
-        0x50,                   // push eax ; dwDatabase
+        0x50,                   // push eax ; base
         0xb9, 0, 0, 0, 0,       // mov ecx,@this
         0xbb, 0, 0, 0, 0,       // mov ebx,@TextHook::Send
         0xff, 0xd3,             // call ebx
@@ -55,7 +80,7 @@ bool Hook::Attach()
 
     void *original;
     MH_STATUS error;
-    auto address = addr_.GetAddress();
+    auto address = hook_addr_.GetAddress();
 
     while ((error = MH_CreateHook(address, trampoline, &original)) != MH_OK)
         if (error == MH_ERROR_ALREADY_CREATED)
@@ -80,7 +105,7 @@ bool Hook::Attach()
 
 void Hook::Detach()
 {
-    auto address = GetHookAddress();
+    auto address = hook_addr_.GetAddress();
     MH_DisableHook(address);
     MH_RemoveHook(address);
 }
