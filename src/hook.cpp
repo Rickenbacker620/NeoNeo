@@ -32,10 +32,10 @@ address_t Hook::GetTextAddress(address_t base)
 {
     address_t address{};
     // get data address
-    address = *(base + hook_inst_.data_off.first);
-    if (hook_inst_.data_off.second.has_value())
+    address = *(base + hook_off_.data.first);
+    if (hook_off_.data.second.has_value())
     {
-        address = *(address + hook_inst_.data_off.second.value());
+        address = *(address + hook_off_.data.second.value());
     }
     return address;
 }
@@ -45,9 +45,9 @@ address_t Hook::GetTextContext(address_t base)
     address_t context{};
 
     context = *(base);
-    if (hook_inst_.context_off.has_value())
+    if (hook_off_.context.has_value())
     {
-        context = *(context + hook_inst_.context_off.value().first);
+        context = *(context + hook_off_.context.value().first);
     }
     return context;
 }
