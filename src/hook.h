@@ -18,17 +18,7 @@
 |   10     |     arg4     |
 */
 
-static constexpr intptr_t offsets[] {
-    0x0,
-    0x4,
-    0x8,
-    0xC,
-    0x10,
-    0x14,
-    0x18,
-    0x1C,
-    0x20
-};
+static constexpr intptr_t offsets[]{0x0, 0x4, 0x8, 0xC, 0x10, 0x14, 0x18, 0x1C, 0x20};
 
 enum HookAttribute : uint16_t
 {
@@ -134,19 +124,32 @@ constexpr HookOffsetHints ParseInstructor(std::string_view instructor)
 
 constexpr HookOffsetHints ParsePredefinedInstructor(std::string_view instructor)
 {
-    auto result = ctre::match<R"(^(\d)(?::(\d))?$)">(instructor);
+    auto result = ctre::match<R"(^(\d)(\*)?(?::(\d))?$)">(instructor);
     auto argn = ParseHex(result.get<1>()).value();
     OffsetType data{offsets[argn], std::nullopt};
 
-    auto len_offset_index = ParseHex(result.get<2>());
+    std::optional<OffsetType> context{};
+    if (result.get<2>().data())
+    {
+        context = {0, std::nullopt};
+    }
+    else
+    {
+        context = std::nullopt;
+    }
+
+    auto len_offset_index = ParseHex(result.get<3>());
     std::optional<intptr_t> len_offset{};
-    if (len_offset_index.has_value()) {
+    if (len_offset_index.has_value())
+    {
         len_offset = offsets[len_offset_index.value()];
-    }else {
+    }
+    else
+    {
         len_offset = std::nullopt;
     }
 
-    return HookOffsetHints{.data=data, .context=std::nullopt, .length=len_offset};
+    return HookOffsetHints{.data = data, .context = context, .length = len_offset};
 }
 
 constexpr HookAddress ParseAddress(std::string_view address)
