@@ -1,6 +1,7 @@
 #include "hook.h"
+#include "server.h"
 #include <ctre.hpp>
-#include <format>
+#include <fmt/core.h>
 
 address_t HookAddress::GetAddress() const
 {
@@ -17,50 +18,72 @@ address_t HookAddress::GetAddress() const
     return result + offset;
 }
 
-size_t Hook::GetTextLength(address_t text_addr)
+size_t Hook::GetTextLength(address_t text_addr) const
 {
-    size_t len{};
-    if (hook_attr_ & USING_STRING) {
-        return std::strlen(std::bit_cast<const char*>(text_addr));
-    } else {
+    if (attribute_ & USING_STRING)
+    {
+        return std::strlen(std::bit_cast<const char *>(text_addr));
+    }
+    else
+    {
         return 1;
     }
-    return len;
 }
 
-address_t Hook::GetTextAddress(address_t base)
+address_t Hook::GetTextAddress(address_t base) const
 {
     address_t address{};
-    // get data address
-    address = *(base + hook_off_.data.first);
-    if (hook_off_.data.second.has_value())
+
+    // for character, data is right on stack, add the 1st offset to get a stack address
+    address = base + text_offset_.data.first;
+
+    // if there is a 2nd offset, the value on stack is not the data, it is an address
+    // for strings, the 2nd offset must exist and is 0 by default
+    if (text_offset_.data.second.has_value())
     {
-        address = *(address + hook_off_.data.second.value());
+        address = (*address) + text_offset_.data.second.value();
     }
     return address;
 }
 
-address_t Hook::GetTextContext(address_t base)
+address_t Hook::GetTextContext(address_t base) const
 {
+
     address_t context{};
 
     context = *(base);
-    if (hook_off_.context.has_value())
+    if (text_offset_.context.has_value())
     {
-        context = *(context + hook_off_.context.value().first);
+        context = *(context + text_offset_.context.value().first);
     }
     return context;
 }
 
+std::string Hook::GetName() const
+{
+    if (!address_.function.empty())
+    {
+        return std::string{address_.function};
+    }
+    else
+    {
+        return std::string{"other hooks"};
+    }
+}
+
 void Hook::Send(address_t base)
 {
-    auto hook_addr = hook_addr_.GetAddress();
+    auto hook_addr = address_.GetAddress();
     auto text_address = GetTextAddress(base);
     auto text_context = GetTextContext(base);
 
-    char buffer[1000];
+    char buffer[1000]{};
     auto text_length = GetTextLength(text_address);
     std::memcpy(buffer, text_address, text_length);
+    auto str =
+        fmt::format("{:X}:{:X} {} {}\n", (int)address_.GetAddress(), (int)text_context, address_.function, buffer);
+    std::cout << str;
+    g_server.Send(str);
 }
 
 bool Hook::Attach()
@@ -88,7 +111,7 @@ bool Hook::Attach()
 
     void *original;
     MH_STATUS error;
-    auto address = hook_addr_.GetAddress();
+    auto address = address_.GetAddress();
 
     while ((error = MH_CreateHook(address, trampoline, &original)) != MH_OK)
         if (error == MH_ERROR_ALREADY_CREATED)
@@ -99,7 +122,6 @@ bool Hook::Attach()
         }
         else
             std::cout << MH_StatusToString(error) << address << std::endl << this->trampoline << std::endl;
-    // return ConsoleOutput(MH_StatusToString(error)), false;
 
     using HookThisType = Hook *;
     using HookSendType = void (Hook::*)(address_t);
@@ -113,7 +135,7 @@ bool Hook::Attach()
 
 void Hook::Detach()
 {
-    auto address = hook_addr_.GetAddress();
+    auto address = address_.GetAddress();
     MH_DisableHook(address);
     MH_RemoveHook(address);
 }

@@ -3,10 +3,22 @@
 
 PCEngine::PCEngine() : Engine{"PC"}
 {
-    // constexpr auto a =  "HS4@0:kernel32.dll:lstrlenA"_hcode;
-    // hooks_.push_back(a);
-    for (auto& k32hook : kernel32_hooks_) {
-        hooks_.push_back(k32hook);
+    for (auto &h : kernel32_hooks_)
+    {
+        hooks_.push_back(h);
+    }
+
+    for (auto &h : user32_hooks_)
+    {
+        hooks_.push_back(h);
+    }
+
+    if (GetModuleHandle("OLEAUT32.dll"))
+    {
+        for (auto &h : oleaut32_hooks_)
+        {
+            hooks_.push_back(h);
+        }
     }
 }
 

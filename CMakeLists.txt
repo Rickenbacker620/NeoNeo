@@ -21,7 +21,14 @@ FetchContent_Declare(
     GIT_SHALLOW 1
 )
 
-FetchContent_MakeAvailable(minhook ctre)
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG 10.2.1
+    GIT_SHALLOW 1
+)
+
+FetchContent_MakeAvailable(minhook ctre fmt)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)

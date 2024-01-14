@@ -51,12 +51,16 @@ class PCEngine : public Engine
         // CharPrevExA(WORD CodePage, LPCTSTR lpStart, LPCTSTR lpCurrentChar, DWORD dwFlags)
     };
 
-    constexpr static Hook OLEAUT32_hooks_[] = {
+    constexpr static Hook oleaut32_hooks_[] = {
         "HQ1@0:OLEAUT32.dll:SysAllocString"_hcode,
         // SysAllocString(const OLECHAR* psz)
         "HQ1@0:OLEAUT32.dll:SysAllocStringLen"_hcode
         // SysAllocStringLen(const OLECHAR* pch, unsigned int cch)
     };
+
+    // constexpr static Hook gdi_hooks_[] = {
+
+    // }
     // clang-format on
 
   public:

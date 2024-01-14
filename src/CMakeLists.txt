@@ -39,4 +39,4 @@ target_compile_definitions(neohook PRIVATE WIN32_LEAN_AND_MEAN)
 
 target_precompile_headers(neohook PRIVATE ${CMAKE_SOURCE_DIR}/include/common.h)
 
-target_link_libraries(neohook PRIVATE minhook ws2_32 ctre)
+target_link_libraries(neohook PRIVATE minhook ws2_32 ctre fmt)

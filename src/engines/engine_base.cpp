@@ -9,5 +9,6 @@ void Engine::AttachHooks()
     for (auto &hook : hooks_)
     {
         hook.Attach();
+        std::cout << hook.GetName() << "attached" << std::endl;
     }
 }

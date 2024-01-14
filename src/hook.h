@@ -39,7 +39,7 @@ enum HookAttribute : uint16_t
 using OffsetType = std::pair<intptr_t, std::optional<intptr_t>>;
 
 // Offset hints about where to find the text
-struct HookOffsetHints
+struct TextOffsetHints
 {
     OffsetType data{};
     std::optional<OffsetType> context{};
@@ -103,12 +103,19 @@ constexpr uint16_t ParseAttribute(std::string_view attribute)
     return hattr;
 }
 
-constexpr HookOffsetHints ParseInstructor(std::string_view instructor)
+constexpr TextOffsetHints ParseInstructor(std::string_view instructor, uint16_t attribute)
 {
     auto result =
         ctre::match<R"(^(-?[[:xdigit:]]+)(?:\*(-?[[:xdigit:]]+))?(?::(-?[[:xdigit:]]+))?(?:\*(-?[[:xdigit:]]+))?$)">(
             instructor);
+
     OffsetType data{ParseHex(result.get<1>()).value(), ParseHex(result.get<2>())};
+
+    if (attribute & USING_STRING && !data.second.has_value())
+    {
+        data.second.emplace(0);
+    }
+
     std::optional<OffsetType> context{};
     if (result.get<3>().data())
     {
@@ -119,14 +126,21 @@ constexpr HookOffsetHints ParseInstructor(std::string_view instructor)
         context = {std::nullopt};
     }
 
-    return HookOffsetHints{data, context};
+    return TextOffsetHints{data, context};
 }
 
-constexpr HookOffsetHints ParsePredefinedInstructor(std::string_view instructor)
+constexpr TextOffsetHints ParsePredefinedInstructor(std::string_view instructor, uint16_t attribute)
 {
+    // different from original Hcode format, specialized for function which has clear signature
+    // data_arg_index[* if arg is pointer][:length_arg_index]
     auto result = ctre::match<R"(^(\d)(\*)?(?::(\d))?$)">(instructor);
     auto argn = ParseHex(result.get<1>()).value();
     OffsetType data{offsets[argn], std::nullopt};
+
+    if (attribute & USING_STRING && !data.second.has_value())
+    {
+        data.second.emplace(0);
+    }
 
     std::optional<OffsetType> context{};
     if (result.get<2>().data())
@@ -149,7 +163,7 @@ constexpr HookOffsetHints ParsePredefinedInstructor(std::string_view instructor)
         len_offset = std::nullopt;
     }
 
-    return HookOffsetHints{.data = data, .context = context, .length = len_offset};
+    return TextOffsetHints{.data = data, .context = context, .length = len_offset};
 }
 
 constexpr HookAddress ParseAddress(std::string_view address)
@@ -162,28 +176,29 @@ constexpr HookAddress ParseAddress(std::string_view address)
 class Hook
 {
   private:
-    uint16_t hook_attr_{};
-    HookAddress hook_addr_{};
-    HookOffsetHints hook_off_{};
+    uint16_t attribute_{};
+    HookAddress address_{};
+    TextOffsetHints text_offset_{};
     BYTE trampoline[40]{};
 
-    size_t GetTextLength(address_t text_addr);
-    address_t GetTextAddress(address_t base);
-    address_t GetTextContext(address_t base);
+    size_t GetTextLength(address_t text_addr) const;
+    address_t GetTextAddress(address_t base) const;
+    address_t GetTextContext(address_t base) const;
 
   public:
-    constexpr Hook(uint16_t attr, HookAddress addr, HookOffsetHints inst)
-        : hook_attr_{attr}, hook_addr_{addr}, hook_off_{inst} {};
+    constexpr Hook(uint16_t attr, HookAddress addr, TextOffsetHints inst)
+        : attribute_{attr}, address_{addr}, text_offset_{inst} {};
     constexpr Hook(std::string_view hcode)
     {
         auto result = ctre::match<R"(^\\?H([ABWHSQVM]N?)(.*)@(.*)$)">(hcode);
-        hook_attr_ = hookcode::ParseAttribute(result.get<1>());
-        hook_off_ = hookcode::ParseInstructor(result.get<2>());
-        hook_addr_ = hookcode::ParseAddress(result.get<3>());
+        attribute_ = hookcode::ParseAttribute(result.get<1>());
+        text_offset_ = hookcode::ParseInstructor(result.get<2>(), attribute_);
+        address_ = hookcode::ParseAddress(result.get<3>());
     };
     consteval Hook(std::string_view hcode, uint32_t len){
 
     };
+    std::string GetName() const;
     void Send(address_t dwDatabase);
     bool Attach();
     void Detach();
@@ -193,7 +208,7 @@ consteval Hook operator"" _hcode(const char *hcode, std::size_t)
 {
     auto result = ctre::match<R"(^\\?H([ABWHSQVM]N?)(.*)@(.*)$)">(hcode);
     auto hook_attr = hookcode::ParseAttribute(result.get<1>());
-    auto hook_inst = hookcode::ParsePredefinedInstructor(result.get<2>());
+    auto hook_inst = hookcode::ParsePredefinedInstructor(result.get<2>(), hook_attr);
     auto hook_addr = hookcode::ParseAddress(result.get<3>());
     return Hook{hook_attr, hook_addr, hook_inst};
 }
