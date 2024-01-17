@@ -58,9 +58,14 @@ class PCEngine : public Engine
         // SysAllocStringLen(const OLECHAR* pch, unsigned int cch)
     };
 
-    // constexpr static Hook gdi_hooks_[] = {
-
-    // }
+    constexpr static Hook gdi_hooks_[] = {
+        "HS2:3@0:gdi32.dll:GetTextExtentPoint32A"_hcode,
+        "HS2:3@0:gdi32.dll:GetTextExtentPointA"_hcode,
+        "HS2:3@0:gdi32.dll:GetCharacterPlacementA"_hcode,
+        "HS2:3@0:gdi32.dll:GetGlyphIndicesA"_hcode,
+        "HS2:3@0:gdi32.dll:GetGlyphOutlineA"_hcode,
+        "HS6:3@0:gdi32.dll:ExtTextOutA"_hcode,
+    };
     // clang-format on
 
   public:

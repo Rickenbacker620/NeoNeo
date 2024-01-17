@@ -33,6 +33,10 @@ size_t Hook::GetTextLength(address_t text_addr) const
 address_t Hook::GetTextAddress(address_t base) const
 {
     address_t address{};
+    if (address_.module == "OLEAUT32.dll")
+    {
+        int a = 1;
+    }
 
     // for character, data is right on stack, add the 1st offset to get a stack address
     address = base + text_offset_.data.first;
@@ -61,28 +65,57 @@ address_t Hook::GetTextContext(address_t base) const
 
 std::string Hook::GetName() const
 {
-    if (!address_.function.empty())
-    {
-        return std::string{address_.function};
-    }
-    else
-    {
-        return std::string{"other hooks"};
-    }
+    // TODO return name based on hook type
+    return "dummy hookname";
 }
 
 void Hook::Send(address_t base)
 {
     auto hook_addr = address_.GetAddress();
+
     auto text_address = GetTextAddress(base);
+
+    // skip if textaddress is invalid
+    if (!text_address)
+    {
+        return;
+    }
+
     auto text_context = GetTextContext(base);
 
     char buffer[1000]{};
     auto text_length = GetTextLength(text_address);
     std::memcpy(buffer, text_address, text_length);
-    auto str =
-        fmt::format("{:X}:{:X} {} {}\n", (int)address_.GetAddress(), (int)text_context, address_.function, buffer);
-    std::cout << str;
+    /*
+    Msg format
+    {
+        hook name
+        (custom hook: userhookn)
+        (pre-defined system hook: offset:module:function)
+        (address only hook: address)
+        process id
+        hook address
+        text context
+        text context2(optional)
+        text content
+    }
+    use 0x02 as seperator
+    */
+
+    // clang-format off
+    // massage use 0x02 as sep
+    auto str = fmt::format(
+        "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}",
+        this->GetName(),                // hookname
+        1234,                           // process id
+        address_.GetAddress(),          // hook address
+        text_context,                   // text context
+        0,                              // text context2
+        buffer                          // text content
+    );
+    // clang-format on
+
+    std::cout << str << std::endl;
     g_server.Send(str);
 }
 
