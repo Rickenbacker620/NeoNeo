@@ -33,10 +33,6 @@ size_t Hook::GetTextLength(address_t text_addr) const
 address_t Hook::GetTextAddress(address_t base) const
 {
     address_t address{};
-    if (address_.module == "OLEAUT32.dll")
-    {
-        int a = 1;
-    }
 
     // for character, data is right on stack, add the 1st offset to get a stack address
     address = base + text_offset_.data.first;
@@ -108,9 +104,9 @@ void Hook::Send(address_t base)
         "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}",
         this->GetName(),                // hookname
         1234,                           // process id
-        address_.GetAddress(),          // hook address
-        text_context,                   // text context
-        0,                              // text context2
+        (void*)address_.GetAddress(),          // hook address
+        (void*)text_context,                   // text context
+        (void*)0,                              // text context2
         buffer                          // text content
     );
     // clang-format on
