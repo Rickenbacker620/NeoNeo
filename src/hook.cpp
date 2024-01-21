@@ -7,7 +7,7 @@ address_t HookAddress::GetAddress() const
 {
     auto handle = GetModuleHandle(std::string{module}.c_str());
     address_t result{};
-    if (function.data())
+    if (!function.empty())
     {
         result = GetProcAddress(handle, std::string{function}.c_str());
     }
@@ -18,11 +18,18 @@ address_t HookAddress::GetAddress() const
     return result + offset;
 }
 
-size_t Hook::GetTextLength(address_t text_addr) const
+size_t Hook::GetTextLength(address_t base, address_t text_addr) const
 {
     if (attribute_ & USING_STRING)
     {
-        return std::strlen(std::bit_cast<const char *>(text_addr));
+        if (text_offset_.length.has_value())
+        {
+            return *(base + text_offset_.length.value());
+        }
+        else
+        {
+            return std::strlen(std::bit_cast<const char *>(text_addr));
+        }
     }
     else
     {
@@ -80,7 +87,7 @@ void Hook::Send(address_t base)
     auto text_context = GetTextContext(base);
 
     char buffer[1000]{};
-    auto text_length = GetTextLength(text_address);
+    auto text_length = GetTextLength(base, text_address);
     std::memcpy(buffer, text_address, text_length);
     /*
     Msg format

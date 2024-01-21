@@ -60,7 +60,7 @@ namespace hookcode
 
 template <typename T = int> constexpr std::optional<T> ParseHex(std::string_view hex_raw)
 {
-    if (!hex_raw.data())
+    if (hex_raw.empty())
     {
         return std::nullopt;
     }
@@ -181,7 +181,7 @@ class Hook
     TextOffsetHints text_offset_{};
     BYTE trampoline[40]{};
 
-    size_t GetTextLength(address_t text_addr) const;
+    size_t GetTextLength(address_t base, address_t text_addr) const;
     address_t GetTextAddress(address_t base) const;
     address_t GetTextContext(address_t base) const;
 
