@@ -76,8 +76,16 @@ address_t Hook::GetTextContext(address_t base) const
 
 std::string Hook::GetName() const
 {
-    // TODO return name based on hook type
-    return fmt::format("{:p}:{:s}:{:s}", (void*)this->address_.offset, this->address_.module, this->address_.function);
+    std::string name = fmt::format("{:p}", (void*)address_.offset);
+    if (!address_.module.empty())
+    {
+        name += fmt::format(":{:s}", address_.module);
+    }
+    if (!address_.function.empty())
+    {
+        name += fmt::format("::{:s}", address_.function);
+    }
+    return name;
 }
 
 void Hook::Send(address_t base)

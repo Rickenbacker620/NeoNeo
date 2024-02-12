@@ -13,6 +13,11 @@ PCEngine::PCEngine() : Engine{"PC"}
         hooks_.push_back(h);
     }
 
+    for (auto &h : gdi32_hooks_)
+    {
+        hooks_.push_back(h);
+    }
+
     if (GetModuleHandle("OLEAUT32.dll"))
     {
         for (auto &h : oleaut32_hooks_)

@@ -47,24 +47,78 @@ class PCEngine : public Engine
         // CharPrevW(LPCWSTR lpszStart, LPCWSTR lpszCurrent)
         "HA2*@0:user32.dll:CharNextExA"_hcode,
         // CharNextExA(WORD CodePage, LPCTSTR lpCurrentChar, DWORD dwFlags)
-        "HW2*@0:user32.dll:CharPrevExA"_hcode
+        "HW2*@0:user32.dll:CharPrevExA"_hcode,
         // CharPrevExA(WORD CodePage, LPCTSTR lpStart, LPCTSTR lpCurrentChar, DWORD dwFlags)
+        "HS2:3@0:user32.dll:DrawTextA"_hcode,
+        // DrawTextA(HDC hdc, LPCSTR lpchText, int cchText, LPRECT lprc, UINT format)
+        "HS2:3@0:user32.dll:DrawTextExA"_hcode,
+        // DrawTextExA(HDC hdc, LPSTR lpchText, int cchText, LPRECT lprc, UINT format, LPDRAWTEXTPARAMS lpdtp)
+        "HS4:5@0:user32.dll:TabbedTextOutA"_hcode,
+        // TabbedTextOutA(HDC hdc, int x, int y, LPCSTR lpString, int chCount, int nTabPositions, const LPINT lpnTabStopPositions, int nTabOrigin)
+        "HS2:3@0:user32.dll:GetTabbedTextExtentA"_hcode,
+        // GetTabbedTextExtentA(HDC hdc, LPCSTR lpString, int chCount, int nTabPositions, const LPINT lpnTabStopPositions)
+        "HS2:3@0:user32.dll:DrawTextW"_hcode,
+        // DrawTextW(HDC hdc, LPCWSTR lpchText, int cchText, LPRECT lprc, UINT format)
+        "HS2:3@0:user32.dll:DrawTextExW"_hcode,
+        // DrawTextExW(HDC hdc, LPWSTR lpchText, int cchText, LPRECT lprc, UINT format, LPDRAWTEXTPARAMS lpdtp)
+        "HS4:5@0:user32.dll:TabbedTextOutW"_hcode,
+        // TabbedTextOutW(HDC hdc, int x, int y, LPCWSTR lpString, int chCount, int nTabPositions, const LPINT lpnTabStopPositions, int nTabOrigin)
+        "HS2:3@0:user32.dll:GetTabbedTextExtentW"_hcode,
+        // GetTabbedTextExtentW(HDC hdc, LPCWSTR lpString, int chCount, int nTabPositions, const LPINT lpnTabStopPositions)
     };
 
     constexpr static Hook oleaut32_hooks_[] = {
         "HQ1@0:OLEAUT32.dll:SysAllocString"_hcode,
         // SysAllocString(const OLECHAR* psz)
-        "HQ1@0:OLEAUT32.dll:SysAllocStringLen"_hcode
+        "HQ1:2@0:OLEAUT32.dll:SysAllocStringLen"_hcode
         // SysAllocStringLen(const OLECHAR* pch, unsigned int cch)
     };
 
-    constexpr static Hook gdi_hooks_[] = {
+    constexpr static Hook gdi32_hooks_[] = {
         "HS2:3@0:gdi32.dll:GetTextExtentPoint32A"_hcode,
+        // GetTextExtentPoint32A(HDC hdc, LPCSTR lpString, int c, LPSIZE psizl)
         "HS2:3@0:gdi32.dll:GetTextExtentPointA"_hcode,
+        // GetTextExtentPointA(HDC hdc, LPCSTR lpString, int c, LPSIZE psizl)
         "HS2:3@0:gdi32.dll:GetCharacterPlacementA"_hcode,
+        // GetCharacterPlacementA(HDC hdc, LPCSTR lpString, int nCount, int nMaxExtent, GCP_RESULTS* lpResults, DWORD dwFlags)
         "HS2:3@0:gdi32.dll:GetGlyphIndicesA"_hcode,
-        "HS2:3@0:gdi32.dll:GetGlyphOutlineA"_hcode,
-        "HS6:3@0:gdi32.dll:ExtTextOutA"_hcode,
+        // GetGlyphIndicesA(HDC hdc, LPCSTR lpstr, int c, LPWORD pgi, DWORD fl)
+        "HA2@0:gdi32.dll:GetGlyphOutlineA"_hcode,
+        // GetGlyphOutlineA(HDC hdc, UINT uChar, UINT uFormat, LPGLYPHMETRICS lpgm, DWORD cbBuffer, LPVOID lpvBuffer, const MAT2* lpmat2)
+        "HS6:7@0:gdi32.dll:ExtTextOutA"_hcode,
+        // ExtTextOutA(HDC hdc, int x, int y, UINT options, const RECT* lprect, LPCSTR lpString, UINT c, const INT* lpDx)
+        "HS4:5@0:gdi32.dll:TextOutA"_hcode,
+        // TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c)
+        "HA2@0:gdi32.dll:GetCharABCWidthsA"_hcode,
+        // GetCharABCWidthsA(HDC hdc, UINT iFirst, UINT iLast, LPABC lpabc)
+        "HA2@0:gdi32.dll:GetCharABCWidthsFloatA"_hcode,
+        // GetCharABCWidthFloatA(HDC hdc, UINT iFirst, UINT iLast, LPABCFLOAT lpABCF)
+        "HA2@0:gdi32.dll:GetCharWidth32A"_hcode,
+        // Getcharwidth32A(HDC hdc, UINT iFirst, UINT iLast, LPINT lpBuffer)
+        "HA2@0:gdi32.dll:GetCharWidthFloatA"_hcode,
+        // GetCharWidthFloatA(HDC hdc, UINT iFirst, UINT iLast, PFLOAT lpBuffer)
+        "HS2:3@0:gdi32.dll:GetTextExtentPoint32W"_hcode,
+        // GetTextExtentPoint32W(HDC hdc, LPCWSTR lpString, int c, LPSIZE psizl)
+        "HS2:3@0:gdi32.dll:GetTextExtentExPointW"_hcode,
+        // GetTextExtentExPointW(HDC hdc, LPCWSTR lpszStr, int cchString, int nMaxExtent, LPINT lpnFit, LPINT alpDx, LPSIZE lpSize)
+        "HS2:3@0:gdi32.dll:GetCharacterPlacementW"_hcode,
+        // GetCharacterPlacementW(HDC hdc, LPCWSTR lpString, int nCount, int nMaxExtent, GCP_RESULTS* lpResults, DWORD dwFlags)
+        "HS2:3@0:gdi32.dll:GetGlyphIndicesW"_hcode,
+        // GetGlyphIndicesW(HDC hdc, LPCWSTR lpstr, int c, LPWORD pgi, DWORD fl)
+        "HA2@0:gdi32.dll:GetGlyphOutlineW"_hcode,
+        // GetGlyphOutlineW(HDC hdc, UINT uChar, UINT uFormat, LPGLYPHMETRICS lpgm, DWORD cbBuffer, LPVOID lpvBuffer, const MAT2* lpmat2)
+        "HS6:7@0:gdi32.dll:ExtTextOutW"_hcode,
+        // ExtTextOutW(HDC hdc, int x, int y, UINT options, const RECT* lprect, LPCWSTR lpString, UINT c, const INT* lpDx)
+        "HS4:5@0:gdi32.dll:TextOutW"_hcode,
+        // TextOutW(HDC hdc, int x, int y, LPCWSTR lpString, int c)
+        "HA2@0:gdi32.dll:GetCharABCWidthsW"_hcode,
+        // GetCharABCWidthsW(HDC hdc, UINT iFirst, UINT iLast, LPABC lpabc)
+        "HA2@0:gdi32.dll:GetCharABCWidthsFloatW"_hcode,
+        // GetCharABCWidthFloatW(HDC hdc, UINT iFirst, UINT iLast, LPABCFLOAT lpABCF)
+        "HA2@0:gdi32.dll:GetCharWidth32W"_hcode,
+        // Getcharwidth32W(HDC hdc, UINT iFirst, UINT iLast, LPINT lpBuffer)
+        "HA2@0:gdi32.dll:GetCharWidthFloatW"_hcode,
+        // GetCharWidthFloatW(HDC hdc, UINT iFirst, UINT iLast, PFLOAT lpBuffer)
     };
     // clang-format on
 
