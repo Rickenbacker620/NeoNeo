@@ -24,7 +24,15 @@ size_t Hook::GetTextLength(address_t base, address_t text_addr) const
     {
         if (text_offset_.length.has_value())
         {
-            return *(base + text_offset_.length.value());
+            int length = *(base + text_offset_.length.value());
+            if (length == -1)
+            {
+                return std::strlen(std::bit_cast<const char *>(text_addr));
+            }
+            else
+            {
+                return length;
+            }
         }
         else
         {
@@ -69,7 +77,7 @@ address_t Hook::GetTextContext(address_t base) const
 std::string Hook::GetName() const
 {
     // TODO return name based on hook type
-    return "dummy hookname";
+    return fmt::format("{:p}:{:s}:{:s}", (void*)this->address_.offset, this->address_.module, this->address_.function);
 }
 
 void Hook::Send(address_t base)
@@ -89,6 +97,12 @@ void Hook::Send(address_t base)
     char buffer[1000]{};
     auto text_length = GetTextLength(base, text_address);
     std::memcpy(buffer, text_address, text_length);
+
+    if (std::strlen(buffer) == 0)
+    {
+        std::cout << "empty buffer" << text_length  << this->GetName() << std::endl;
+        return;
+    }
     /*
     Msg format
     {
@@ -108,7 +122,7 @@ void Hook::Send(address_t base)
     // clang-format off
     // massage use 0x02 as sep
     auto str = fmt::format(
-        "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}",
+        "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}\x03",
         this->GetName(),                // hookname
         1234,                           // process id
         (void*)address_.GetAddress(),          // hook address
@@ -118,7 +132,7 @@ void Hook::Send(address_t base)
     );
     // clang-format on
 
-    std::cout << str << std::endl;
+    // std::cout << str << std::endl;
     g_server.Send(str);
 }
 
