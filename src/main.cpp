@@ -13,7 +13,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     case DLL_PROCESS_ATTACH: {
 
         // REVIEW main loop
-        std::this_thread::sleep_for(1s);
 
         MH_Initialize();
 

@@ -17,6 +17,7 @@ class Engine
 
   public:
     Engine(const char *name) : name_(name){};
+    virtual ~Engine();
     void AttachHooks();
 
     using EngineMatch = Engine *(*)();

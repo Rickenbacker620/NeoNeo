@@ -105,13 +105,13 @@ class PCEngine : public Engine
         // GetCharacterPlacementW(HDC hdc, LPCWSTR lpString, int nCount, int nMaxExtent, GCP_RESULTS* lpResults, DWORD dwFlags)
         "HS2:3@0:gdi32.dll:GetGlyphIndicesW"_hcode,
         // GetGlyphIndicesW(HDC hdc, LPCWSTR lpstr, int c, LPWORD pgi, DWORD fl)
-        "HA2@0:gdi32.dll:GetGlyphOutlineW"_hcode,
+        "HW2@0:gdi32.dll:GetGlyphOutlineW"_hcode,
         // GetGlyphOutlineW(HDC hdc, UINT uChar, UINT uFormat, LPGLYPHMETRICS lpgm, DWORD cbBuffer, LPVOID lpvBuffer, const MAT2* lpmat2)
         "HS6:7@0:gdi32.dll:ExtTextOutW"_hcode,
         // ExtTextOutW(HDC hdc, int x, int y, UINT options, const RECT* lprect, LPCWSTR lpString, UINT c, const INT* lpDx)
         "HS4:5@0:gdi32.dll:TextOutW"_hcode,
         // TextOutW(HDC hdc, int x, int y, LPCWSTR lpString, int c)
-        "HA2@0:gdi32.dll:GetCharABCWidthsW"_hcode,
+        "HW2@0:gdi32.dll:GetCharABCWidthsW"_hcode,
         // GetCharABCWidthsW(HDC hdc, UINT iFirst, UINT iLast, LPABC lpabc)
         "HA2@0:gdi32.dll:GetCharABCWidthsFloatW"_hcode,
         // GetCharABCWidthFloatW(HDC hdc, UINT iFirst, UINT iLast, LPABCFLOAT lpABCF)
@@ -124,7 +124,6 @@ class PCEngine : public Engine
 
   public:
     PCEngine();
-    ~PCEngine();
     static Engine *Match();
 
     REGIST_ENGINE_MATCH

@@ -1,5 +1,4 @@
 #include "engine.h"
-#include "../../hook.h"
 
 PCEngine::PCEngine() : Engine{"PC"}
 {
@@ -25,10 +24,6 @@ PCEngine::PCEngine() : Engine{"PC"}
             hooks_.push_back(h);
         }
     }
-}
-
-PCEngine::~PCEngine()
-{
 }
 
 Engine *PCEngine::Match()

@@ -1,4 +1,4 @@
-add_library(neohook MODULE main.cpp hook.cpp engines/engine_base.cpp engines/PC/engine.cpp)
+add_library(neohook MODULE main.cpp hook.cpp engines/engine_base.cpp engines/PC/engine.cpp engines/kirikiri/engine.cpp)
 
 target_compile_features(neohook PUBLIC cxx_std_23)
 

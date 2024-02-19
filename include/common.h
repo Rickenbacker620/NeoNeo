@@ -234,6 +234,10 @@ void Localize();
 #endif
 
 
+/*
+ *  address_t
+ *  A simple wrapper around uintptr_t to allow for easy manipulation of memory addresses.
+ */
 class address_t {
 private:
     uintptr_t address;
@@ -274,6 +278,11 @@ public:
 
     constexpr address_t& operator-=(intptr_t offset) {
         address -= offset;
+        return *this;
+    }
+
+    constexpr address_t& operator>>=(uintptr_t digits) {
+        address >>= digits;
         return *this;
     }
 

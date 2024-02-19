@@ -20,28 +20,50 @@ address_t HookAddress::GetAddress() const
 
 size_t Hook::GetTextLength(address_t base, address_t text_addr) const
 {
+    // lambda to get the length of a null-terminated string
+    auto GetNullTerminatedLength = [&](address_t addr) -> size_t {
+        return attribute_ & USING_UTF16 ? std::wcslen(std::bit_cast<const wchar_t *>(addr)) * 2
+                                        : std::strlen(std::bit_cast<const char *>(addr));
+    };
+
     if (attribute_ & USING_STRING)
     {
+        // if length offset is specified, use it
         if (text_offset_.length.has_value())
         {
-            int length = *(base + text_offset_.length.value());
+            size_t length = *(base + text_offset_.length.value());
+            // in some cases, -1 is used to indicate null-terminated string
             if (length == -1)
             {
-                return std::strlen(std::bit_cast<const char *>(text_addr));
+                return GetNullTerminatedLength(text_addr);
             }
             else
             {
-                return length;
+                // if using utf16, double the length, otherwise use the length as is
+                return attribute_ & USING_UTF16 ? length * 2 : length;
             }
         }
+        // if length offset is not specified, it is a null-terminated string
         else
         {
-            return std::strlen(std::bit_cast<const char *>(text_addr));
+            return GetNullTerminatedLength(text_addr);
         }
     }
     else
     {
-        return 1;
+        if (attribute_ & USING_UTF16)
+        {
+            return 2;
+        }
+        else
+        {
+            if (attribute_ & BIG_ENDIAN)
+            {
+                text_addr >>= 8;
+            }
+            // FIXME need to fix hardcoded 932 codepage
+            return !!IsDBCSLeadByteEx(932, text_addr & 0xFF) + 1;
+        }
     }
 }
 
@@ -76,7 +98,7 @@ address_t Hook::GetTextContext(address_t base) const
 
 std::string Hook::GetName() const
 {
-    std::string name = fmt::format("{:p}", (void*)address_.offset);
+    std::string name = fmt::format("{:p}", (void *)address_.offset);
     if (!address_.module.empty())
     {
         name += fmt::format(":{:s}", address_.module);
@@ -106,11 +128,6 @@ void Hook::Send(address_t base)
     auto text_length = GetTextLength(base, text_address);
     std::memcpy(buffer, text_address, text_length);
 
-    if (std::strlen(buffer) == 0)
-    {
-        std::cout << "empty buffer" << text_length  << this->GetName() << std::endl;
-        return;
-    }
     /*
     Msg format
     {
@@ -140,7 +157,13 @@ void Hook::Send(address_t base)
     );
     // clang-format on
 
-    // std::cout << str << std::endl;
+    // print buffer as hex for debug
+    std::string strDebug;
+    for (int i = 0; i < text_length; i++)
+    {
+        strDebug += fmt::format("{:02x} ", (unsigned char)buffer[i]);
+    }
+
     g_server.Send(str);
 }
 

@@ -12,3 +12,11 @@ void Engine::AttachHooks()
         std::cout << hook.GetName() << "attached" << std::endl;
     }
 }
+Engine::~Engine()
+{
+    std::cout << "Detaching ----" << name_ << std::endl;
+    for (auto &hook : hooks_)
+    {
+        hook.Detach();
+    }
+}

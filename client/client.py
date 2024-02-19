@@ -71,7 +71,7 @@ def main():
             break  # Break out of the loop if connection successful
 
         attempts += 1
-        time.sleep(1)  # Wait before retrying
+        time.sleep(2)  # Wait before retrying
 
     if attempts == MAX_RETRIES:
         print("Maximum retries reached. Connection unsuccessful.")
@@ -89,7 +89,7 @@ def main():
                 for text_thread in text_threads:
                     text = Text.add_text(text_thread)
                     print(text)
-            except:
+            except UnicodeDecodeError:
                 print(message.hex())
 
         except socket.error as e:
