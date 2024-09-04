@@ -1,4 +1,5 @@
 #include "hook.h"
+#include "dialogue.h"
 #include "server.h"
 #include <ctre.hpp>
 #include <fmt/core.h>
@@ -110,8 +111,28 @@ std::string Hook::GetName() const
     return name;
 }
 
+void decodeAsUTF8(void *buffer, size_t length)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        if (((char *)buffer)[i] == 0x81)
+        {
+            ((char *)buffer)[i] = 0x5C;
+        }
+    }
+}
+
 void Hook::Send(address_t base)
 {
+    auto getBufferHex = [&](std::vector<char> &buffer) -> std::string {
+        std::string strDebug;
+        for (size_t i = 0; i < buffer.size(); i++)
+        {
+            strDebug += fmt::format("{:02x} ", (unsigned char)buffer[i]);
+        }
+        return strDebug;
+    };
+
     auto hook_addr = address_.GetAddress();
 
     auto text_address = GetTextAddress(base);
@@ -124,9 +145,76 @@ void Hook::Send(address_t base)
 
     auto text_context = GetTextContext(base);
 
-    char buffer[1000]{};
     auto text_length = GetTextLength(base, text_address);
-    std::memcpy(buffer, text_address, text_length);
+
+    std::string encoding = "";
+
+    if (attribute_ & USING_UTF8)
+    {
+        encoding = "UTF-8";
+    }
+    else if (attribute_ & USING_UTF16)
+    {
+        encoding = "UTF-16";
+    }
+    else
+    {
+        encoding = "Shift-JIS";
+    }
+
+    auto dialogue_id = fmt::format("{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{:s}",
+                                   this->GetName(),               // hookname
+                                   1234,                          // process id
+                                   (void *)address_.GetAddress(), // hook address
+                                   (void *)text_context,          // text context
+                                   (void *)0,                      // text context2
+                                   encoding                      // encoding
+    );
+
+    if (text_length == 2)
+    {
+        // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + 1)));
+        // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
+        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
+        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + 1)));
+    }
+    else
+    {
+        char temp[1000];
+        std::memcpy(temp, text_address, text_length);
+        for (size_t i = 0; i < text_length; i++)
+        {
+            Dialogue::PushTextToDialogue(dialogue_id, temp[i]);
+        }
+    }
+
+    // if (address_.function == "GetGlyphOutlineW")
+    // {
+    //     //  && text_context == address_t{0x67EA21F4}
+    //     // std::cout << text_context << " " << address_t{0x678021F4} << (text_context == address_t{0x678021F4})
+    //     //           << std::endl;
+    //     std::cout << "text_context" << text_context << "|" << "text length: " << text_length << "|"
+    //               << "buffer_index: " << buffer_index << "|" << "buffer: " << getBufferHex(buffer) << std::endl;
+    // }
+
+    // // if buffer is full or null-terminated string is reached
+    // if (buffer.size() >= 1000 || buffer.back() == 0)
+    // {
+    //     // clang-format off
+    //     // massage use 0x02 as sep
+    //     auto str = fmt::format(
+    //         "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}\x03",
+    //         this->GetName(),                // hookname
+    //         1234,                           // process id
+    //         (void*)address_.GetAddress(),          // hook address
+    //         (void*)text_context,                   // text context
+    //         (void*)0,                              // text context2
+    //         buffer.data()                          // text content
+    //     );
+    //     // clang-format on
+
+    //     g_server.Send(str);
+    // }
 
     /*
     Msg format
@@ -144,27 +232,35 @@ void Hook::Send(address_t base)
     use 0x02 as seperator
     */
 
-    // clang-format off
-    // massage use 0x02 as sep
-    auto str = fmt::format(
-        "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}\x03",
-        this->GetName(),                // hookname
-        1234,                           // process id
-        (void*)address_.GetAddress(),          // hook address
-        (void*)text_context,                   // text context
-        (void*)0,                              // text context2
-        buffer                          // text content
-    );
-    // clang-format on
+    // // clang-format off
+    // // massage use 0x02 as sep
+    // auto str = fmt::format(
+    //     "{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{}\x03",
+    //     this->GetName(),                // hookname
+    //     1234,                           // process id
+    //     (void*)address_.GetAddress(),          // hook address
+    //     (void*)text_context,                   // text context
+    //     (void*)0,                              // text context2
+    //     buffer                          // text content
+    // );
+    // // clang-format on
 
-    // print buffer as hex for debug
-    std::string strDebug;
-    for (int i = 0; i < text_length; i++)
-    {
-        strDebug += fmt::format("{:02x} ", (unsigned char)buffer[i]);
-    }
+    // // print buffer as hex for debug
+    // std::string strDebug;
+    // for (int i = 0; i < text_length; i++)
+    // {
+    //     strDebug += fmt::format("{:02x} ", (unsigned char)buffer[i]);
+    // }
 
-    g_server.Send(str);
+    // if (address_.function == "GetGlyphOutlineW")
+    // {
+    //     //  && text_context == address_t{0x67EA21F4}
+    //     // std::cout << text_context << " " << address_t{0x678021F4} << (text_context == address_t{0x678021F4})
+    //     //           << std::endl;
+    //     std::cout << strDebug;
+    // }
+
+    // g_server.Send(str);
 }
 
 bool Hook::Attach()

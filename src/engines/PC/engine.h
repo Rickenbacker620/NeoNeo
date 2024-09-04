@@ -126,5 +126,5 @@ class PCEngine : public Engine
     PCEngine();
     static Engine *Match();
 
-    REGIST_ENGINE_MATCH
+    REGISTER_ENGINE_MATCH
 };

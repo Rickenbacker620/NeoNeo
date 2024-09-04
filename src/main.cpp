@@ -5,6 +5,7 @@ using namespace std::chrono_literals;
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
 {
     AllocConsole();
+    SetConsoleOutputCP(CP_UTF8);
     FILE *filePtr;
     freopen_s(&filePtr, "CONOUT$", "w", stdout);
 

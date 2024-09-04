@@ -249,6 +249,11 @@ public:
 
     constexpr address_t(void* ptr) : address(std::bit_cast<uintptr_t>(ptr)) {}
 
+    constexpr bool operator==(const address_t& other) const {
+        return address == other.address;
+    }
+
+
     constexpr address_t& operator=(void* ptr) {
         address = std::bit_cast<uintptr_t>(ptr);
         return *this;
@@ -260,20 +265,32 @@ public:
     }
 
     constexpr address_t operator+(intptr_t offset) const {
-        return address_t(address + offset);
+        return {address + offset};
     }
 
     constexpr address_t operator+(uintptr_t offset) const {
-        return address_t(address + offset);
+        return {address + offset};
     }
 
     constexpr address_t operator-(intptr_t offset) const {
-        return address_t(address - offset);
+        return {address - offset};
     }
 
     constexpr address_t& operator+=(intptr_t offset) {
         address += offset;
         return *this;
+    }
+
+    // constexpr bool operator<(const address_t& other) const {
+    //     return address < other.address;
+    // }
+
+    // constexpr bool operator>(const address_t& other) const {
+    //     return address > other.address;
+    // }
+    //use spaceship operator instead
+    constexpr auto operator<=>(const address_t& other) const {
+        return address <=> other.address;
     }
 
     constexpr address_t& operator-=(intptr_t offset) {
@@ -293,6 +310,10 @@ public:
 
     constexpr operator void*() const {
         return std::bit_cast<void*>(address);
+    }
+
+    explicit constexpr operator char*() const {
+        return std::bit_cast<char*>(address);
     }
 
     constexpr operator uintptr_t() const {

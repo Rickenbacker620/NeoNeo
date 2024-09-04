@@ -95,5 +95,6 @@ int main()
 
     std::this_thread::sleep_for(2s);
     InjectProcess(GetProcessIdByName(L"殻ノ少女 HD.exe"));
+    std::cout << "Injected" << std::endl;
     // InjectProcess(GetProcessIdByName(L"Karas.exe"));
 }

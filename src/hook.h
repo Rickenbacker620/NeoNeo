@@ -1,5 +1,6 @@
 #pragma once
 #include <ctre.hpp>
+#include <map>
 
 // ANCHOR stack snapshot at hook
 /*
@@ -180,6 +181,7 @@ class Hook
     HookAddress address_{};
     TextOffsetHints text_offset_{};
     BYTE trampoline[40]{};
+    int buffer_index{};
 
     size_t GetTextLength(address_t base, address_t text_addr) const;
     address_t GetTextAddress(address_t base) const;

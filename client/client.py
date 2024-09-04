@@ -40,6 +40,8 @@ class Text:
         text_context2 = tokens[4]
         hash_code = hash(f"{process_id}{hook_address}{text_context}{text_context2}")
         exist_texts = [text for text in Text.all_texts if hash(text) == hash_code]
+        if "GetGlyphOutlineW" in tokens[0]:
+            print(tokens[5])
 
         # If the text already exists, update the content
         if exist_texts:
@@ -56,7 +58,7 @@ def establish_connection():
     try:
         client_socket.connect((SERVER_IP, SERVER_PORT))
         return client_socket
-    except socket.error as e:
+    except Exception as e:
         print(f"Connection failed: {e}")
         return None
 
@@ -84,17 +86,24 @@ def main():
                 print("Connection closed by server")
                 break
             try:
-                text_buffer = message.decode("shift-jis")
-                text_threads = text_buffer.split("\x03")[:-1]
+                # text_buffer = message.decode("shift-jis")
+                text_threads = message.split(b"\x03")[:-1]
                 for text_thread in text_threads:
+                    print(text_thread)
                     text = Text.add_text(text_thread)
-                    print(text)
-            except UnicodeDecodeError:
-                print(message.hex())
+            except Exception as e:
+                pass
+                # print(message.hex())
 
-        except socket.error as e:
+        except Exception as e:
             print(f"Error receiving message: {e}")
             break
+
+        getGlp = [text for text in Text.all_texts if "GetGlyphOutlineW" in text.hook_name]
+        if getGlp and len(getGlp[-1].text_content) % 5 == 0:
+            print(getGlp[-1].text_content)
+
+
 
     client_socket.close()
 
