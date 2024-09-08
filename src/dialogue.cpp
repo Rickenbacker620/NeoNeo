@@ -1,39 +1,9 @@
 #include "dialogue.h"
+#include <Windows.h>
 #include <fmt/format.h>
+#include <iostream>
 #include <optional>
-
-void Dialogue::PushTextToDialogue(std::string id, char buffer)
-{
-    // std::cout << "currently " << dialogues_.size() << " dialogues" << std::endl;
-    // std::cout << "Trying to find dialogue with id: " << id << std::endl;
-
-    // auto dialogue = GetDialogue(id);
-    // if (dialogue == std::nullopt) {
-    //     auto new_dialogue = Dialogue(id);
-    //     std::cout << "Creating new dialogue with id: " << id << std::endl;
-    //     new_dialogue.PushText(buffer);
-    //     dialogues_.push_back(new_dialogue);
-    // } else {
-    //     std::cout << "Found dialogue with id: " << id << std::endl;
-    //     dialogue.value().PushText(buffer);
-
-    // }
-
-    for (const auto &dialogue : dialogues_)
-    {
-        if (dialogue->id_ == id)
-        {
-            dialogue->PushText(buffer);
-            return;
-        }
-    }
-
-    auto new_dialogue = std::make_unique<Dialogue>(id);
-    new_dialogue->PushText(buffer);
-    new_dialogue->Start();
-    dialogues_.push_back(std::move(new_dialogue));
-    return;
-}
+#include <thread>
 
 void Dialogue::PushText(char buffer)
 {
@@ -56,17 +26,6 @@ std::string Dialogue::GetHexText()
     return strDebug;
 }
 
-void Dialogue::Start()
-{
-    std::thread([this] {
-        while (true)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            Flush();
-        }
-    }).detach();
-}
-
 std::string Dialogue::GetUTF8Text()
 {
     if (encoding_ == "UTF-8")
@@ -75,7 +34,7 @@ std::string Dialogue::GetUTF8Text()
         return std::string(buffer_.begin(), buffer_.end());
     }
 
-    if (encoding_ == "UTF-16")
+    if (encoding_ == "UTF-16LE")
     {
         // Convert UTF-16 to UTF-8 using Windows API
         // Assuming the buffer contains little-endian UTF-16 data
@@ -110,16 +69,53 @@ std::string Dialogue::GetUTF8Text()
     return "";
 }
 
-Dialogue::Dialogue(std::string id) : id_(id)
+Dialogue::Dialogue(std::string id, std::string encoding, const INeoOutput &output,
+                   const std::chrono::milliseconds &flush_timeout)
+    : id_(id), encoding_(encoding), output_(output), flush_timeout_(flush_timeout)
 {
-    encoding_ = id.substr(id.find_last_of('\x02') + 1, id.size());
 }
 
 void Dialogue::Flush()
 {
-    if (!buffer_.empty() && NeedFlush() && id_.find("GetGlyphOutline") != std::string::npos)
+    if (!buffer_.empty() && NeedFlush())
     {
-        std::cout << id_ << ": " << GetUTF8Text() << std::endl;
+        output_.outputDialogue(id_, GetUTF8Text());
         buffer_.clear();
     }
+}
+
+DialoguePool::DialoguePool(const INeoOutput &output, unsigned int flush_timeout)
+    : output_(output), flush_timeout_(flush_timeout)
+{
+}
+
+void DialoguePool::PushTextToDialogue(std::string id, std::string encoding, char buffer)
+{
+    for (const auto &dialogue : dialogues_)
+    {
+        if (dialogue->id_ == id)
+        {
+            dialogue->PushText(buffer);
+            return;
+        }
+    }
+
+    auto new_dialogue = std::make_unique<Dialogue>(id, encoding, output_, flush_timeout_);
+    new_dialogue->PushText(buffer);
+    dialogues_.push_back(std::move(new_dialogue));
+    return;
+}
+
+void DialoguePool::Start()
+{
+    std::thread([this] {
+        while (true)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            for (auto &dialogue : dialogues_)
+            {
+                dialogue->Flush();
+            }
+        }
+    }).detach();
 }

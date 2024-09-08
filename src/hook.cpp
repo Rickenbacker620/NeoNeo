@@ -176,7 +176,7 @@ void Hook::Send(address_t base)
         // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + 1)));
         // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
         Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
-        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + 1)));
+        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + intptr_t{1})));
     }
     else
     {

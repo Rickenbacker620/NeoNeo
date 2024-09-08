@@ -177,11 +177,10 @@ constexpr HookAddress ParseAddress(std::string_view address)
 class Hook
 {
   private:
-    uint16_t attribute_{};
+    uint16_t attribute_ = 0;
     HookAddress address_{};
     TextOffsetHints text_offset_{};
     BYTE trampoline[40]{};
-    int buffer_index{};
 
     size_t GetTextLength(address_t base, address_t text_addr) const;
     address_t GetTextAddress(address_t base) const;
@@ -190,6 +189,7 @@ class Hook
   public:
     constexpr Hook(uint16_t attr, HookAddress addr, TextOffsetHints inst)
         : attribute_{attr}, address_{addr}, text_offset_{inst} {};
+
     constexpr Hook(std::string_view hcode)
     {
         auto result = ctre::match<R"(^\\?H([ABWHSQVM]N?)(.*)@(.*)$)">(hcode);
@@ -197,11 +197,11 @@ class Hook
         text_offset_ = hookcode::ParseInstructor(result.get<2>(), attribute_);
         address_ = hookcode::ParseAddress(result.get<3>());
     };
-    consteval Hook(std::string_view hcode, uint32_t len){
 
-    };
     std::string GetName() const;
+
     void Send(address_t dwDatabase);
+
     bool Attach();
     void Detach();
 };

@@ -1,34 +1,53 @@
 #pragma once
-#include <map>
-#include <vector>
-#include <optional>
-#include <memory>
+#include "neo_output.h"
 #include <chrono>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
+class TempOutput : public INeoOutput
+{
+  public:
+    void outputDialogue(const std::string &id, const std::string &text) const override
+    {
+        std::cout << id << ": " << text << std::endl;
+    }
+};
 
 class Dialogue
 {
-private:
-    std::vector<char> buffer_;
+  public:
     std::string id_;
     std::string encoding_;
-
+    std::vector<char> buffer_;
+    const INeoOutput &output_;
+    std::chrono::milliseconds flush_timeout_;
     std::chrono::time_point<std::chrono::steady_clock> last_received_time_;
-    inline static std::vector<std::unique_ptr<Dialogue>> dialogues_;
-    inline static std::chrono::milliseconds flush_timeout_ = std::chrono::milliseconds(1000);
 
-    void Flush();
-
-public:
-    Dialogue() = default;
-    Dialogue(std::string id);
-    static void PushTextToDialogue(std::string id, char buffer);
-
-    void Start();
+    Dialogue() = delete;
+    Dialogue(std::string id, std::string encoding, const INeoOutput &output,
+             const std::chrono::milliseconds &flush_timeout = std::chrono::milliseconds(500));
 
     bool NeedFlush();
-
+    void Flush();
     void PushText(char buffer);
 
     std::string GetHexText();
     std::string GetUTF8Text();
+};
+
+class DialoguePool
+{
+  private:
+    const INeoOutput &output_;
+    std::vector<std::unique_ptr<Dialogue>> dialogues_;
+    std::chrono::milliseconds flush_timeout_;
+
+  public:
+    DialoguePool(const INeoOutput &output, unsigned int flush_timeout);
+    void PushTextToDialogue(std::string id, std::string encoding, char buffer);
+    void Start();
 };
