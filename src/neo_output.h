@@ -3,5 +3,5 @@
 
 class INeoOutput {
 public:
-    virtual void outputDialogue(const std::string& id, const std::string& text) const = 0;
+    virtual void outputDialogue(const std::string& id, const std::string& text) = 0;
 };

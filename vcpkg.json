@@ -2,7 +2,8 @@
   "dependencies": [
     "ctre",
     "fmt",
+    "gtest",
     "minhook",
-    "gtest"
+    "cppzmq"
   ]
 }

@@ -4,5 +4,5 @@
 
 class Logger : public INeoOutput {
 public:
-    void outputDialogue(const std::string& id, const std::string& text) const override;
+    void outputDialogue(const std::string& id, const std::string& text) override;
 };

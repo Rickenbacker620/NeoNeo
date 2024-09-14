@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <bit>
 #include <iostream>
+#include <vector>
+#include <iomanip>
 
 template <typename T>
 concept PointerOrUintptr = std::is_pointer_v<T> || std::is_same_v<T, uintptr_t>;
@@ -67,15 +69,27 @@ public:
         return address <=> other.address;
     }
 
+    constexpr bool operator! () const {
+        return !address;
+    }
 
     constexpr address_t& operator>>=(uintptr_t digits) {
         address >>= digits;
         return *this;
     }
 
+
     friend std::ostream& operator<<(std::ostream& os, const address_t& addr) {
         os << std::uppercase << std::hex << std::setfill('0') << std::setw(sizeof(std::uintptr_t) * 2) << addr.address << std::dec;
         return os;
+    }
+
+    char GetAsByte() const {
+        return *reinterpret_cast<char*>(address);
+    }
+
+    address_t GetAsAddress() const {
+        return *reinterpret_cast<address_t*>(address);
     }
 
     // Templated conversion operator for casting to any pointer type or uintptr_t

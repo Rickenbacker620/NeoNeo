@@ -145,3 +145,14 @@ TEST_F(AddressTest, ConversionToCharPtr) {
     char* asCharPtr = static_cast<char*>(addr);
     ASSERT_EQ(asCharPtr, &c);
 }
+
+TEST_F(AddressTest, Dereference) {
+    uintptr_t c = 0x00000041;
+    address_t addr(&c);
+
+    address_t expected_address = address_t(c);
+    char expected_char = 'A';
+
+    ASSERT_EQ(addr.GetAsAddress(), expected_address);
+    ASSERT_EQ(addr.GetAsByte(), expected_char);
+}

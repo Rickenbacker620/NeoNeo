@@ -11,7 +11,7 @@
 class TempOutput : public INeoOutput
 {
   public:
-    void outputDialogue(const std::string &id, const std::string &text) const override
+    void outputDialogue(const std::string &id, const std::string &text) override
     {
         std::cout << id << ": " << text << std::endl;
     }
@@ -23,12 +23,12 @@ class Dialogue
     std::string id_;
     std::string encoding_;
     std::vector<char> buffer_;
-    const INeoOutput &output_;
+    INeoOutput &output_;
     std::chrono::milliseconds flush_timeout_;
     std::chrono::time_point<std::chrono::steady_clock> last_received_time_;
 
     Dialogue() = delete;
-    Dialogue(std::string id, std::string encoding, const INeoOutput &output,
+    Dialogue(std::string id, std::string encoding, INeoOutput &output,
              const std::chrono::milliseconds &flush_timeout = std::chrono::milliseconds(500));
 
     bool NeedFlush();
@@ -42,12 +42,16 @@ class Dialogue
 class DialoguePool
 {
   private:
-    const INeoOutput &output_;
+    INeoOutput &output_;
     std::vector<std::unique_ptr<Dialogue>> dialogues_;
     std::chrono::milliseconds flush_timeout_;
 
   public:
-    DialoguePool(const INeoOutput &output, unsigned int flush_timeout);
+    static DialoguePool getInstance(INeoOutput &output, unsigned int flush_timeout)
+    {
+        return DialoguePool(output, flush_timeout);
+    }
+    DialoguePool(INeoOutput &output, unsigned int flush_timeout);
     void PushTextToDialogue(std::string id, std::string encoding, char buffer);
     void Start();
 };

@@ -6,11 +6,13 @@
 class MockOutput : public INeoOutput
 {
 public:
-    void outputDialogue(const std::string &id, const std::string &text) const override
+    void outputDialogue(const std::string &id, const std::string &text) override
     {
         std::cout << id << ": " << text << std::endl;
     }
 };
+
+auto mock_output = MockOutput();
 
 void SimulatePusher()
 {
@@ -21,7 +23,7 @@ void SimulatePusher()
     auto DialogueB2 = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
 
     size_t sentence_length = 46;
-    DialoguePool pool(MockOutput(), 1000);
+    DialoguePool pool(mock_output, 1000);
     pool.Start();
 
     for (size_t i = 0; i < sentence_length; i++)
@@ -55,7 +57,8 @@ std::string shift_jis_str(reinterpret_cast<const char *>(shift_jis_bytes), sizeo
 
 TEST(Dialogue, UTF16LEDialogue)
 {
-    auto dialogue_utf16le = Dialogue("UTF16Dialogue", "UTF-16LE", MockOutput());
+    MockOutput output;
+    auto dialogue_utf16le = Dialogue("UTF16Dialogue", "UTF-16LE", output);
 
     for (size_t i = 0; i < sizeof(utf16le_bytes); i++)
     {
@@ -69,7 +72,7 @@ TEST(Dialogue, UTF16LEDialogue)
 
 TEST(Dialogue, ShiftJISDialogue)
 {
-    auto dialogue_shift_jis = Dialogue("ShiftJISDialogue", "Shift-JIS", MockOutput());
+    auto dialogue_shift_jis = Dialogue("ShiftJISDialogue", "Shift-JIS", mock_output);
 
     for (size_t i = 0; i < sizeof(shift_jis_bytes); i++)
     {

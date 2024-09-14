@@ -69,7 +69,7 @@ std::string Dialogue::GetUTF8Text()
     return "";
 }
 
-Dialogue::Dialogue(std::string id, std::string encoding, const INeoOutput &output,
+Dialogue::Dialogue(std::string id, std::string encoding, INeoOutput &output,
                    const std::chrono::milliseconds &flush_timeout)
     : id_(id), encoding_(encoding), output_(output), flush_timeout_(flush_timeout)
 {
@@ -84,7 +84,7 @@ void Dialogue::Flush()
     }
 }
 
-DialoguePool::DialoguePool(const INeoOutput &output, unsigned int flush_timeout)
+DialoguePool::DialoguePool(INeoOutput &output, unsigned int flush_timeout)
     : output_(output), flush_timeout_(flush_timeout)
 {
 }

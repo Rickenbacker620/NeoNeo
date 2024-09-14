@@ -32,7 +32,8 @@ size_t Hook::GetTextLength(address_t base, address_t text_addr) const
         // if length offset is specified, use it
         if (text_offset_.length.has_value())
         {
-            size_t length = *(base + text_offset_.length.value());
+            size_t length = *(static_cast<int *>(base + text_offset_.length.value()));
+            //  (base + text_offset_.length.value());
             // in some cases, -1 is used to indicate null-terminated string
             if (length == -1)
             {
@@ -62,8 +63,10 @@ size_t Hook::GetTextLength(address_t base, address_t text_addr) const
             {
                 text_addr >>= 8;
             }
-            // FIXME need to fix hardcoded 932 codepage
-            return !!IsDBCSLeadByteEx(932, text_addr & 0xFF) + 1;
+            // FIXME need to fix hardcoded 932 codepage && logic not correct
+            // return !!IsDBCSLeadByteEx(932, text_addr & 0xFF) + 1;
+            // return !!IsDBCSLeadByteEx(932, text_addr & 0xFF) + 1;
+            return 1;
         }
     }
 }
@@ -79,7 +82,7 @@ address_t Hook::GetTextAddress(address_t base) const
     // for strings, the 2nd offset must exist and is 0 by default
     if (text_offset_.data.second.has_value())
     {
-        address = (*address) + text_offset_.data.second.value();
+        address = address.GetAsAddress() + text_offset_.data.second.value();
     }
     return address;
 }
@@ -89,10 +92,10 @@ address_t Hook::GetTextContext(address_t base) const
 
     address_t context{};
 
-    context = *(base);
+    context = base.GetAsAddress();
     if (text_offset_.context.has_value())
     {
-        context = *(context + text_offset_.context.value().first);
+        context = (context.GetAsAddress() + text_offset_.context.value().first).GetAsAddress();
     }
     return context;
 }

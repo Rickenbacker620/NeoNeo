@@ -11,6 +11,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(ctre CONFIG REQUIRED)
 find_package(minhook CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(cppzmq CONFIG REQUIRED)
 
 include(GoogleTest)
 include(CTest)

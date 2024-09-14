@@ -1,6 +1,7 @@
 #pragma once
 #include <ctre.hpp>
 #include <map>
+#include "common.h"
 
 // ANCHOR stack snapshot at hook
 /*

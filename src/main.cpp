@@ -1,4 +1,7 @@
-#include "engines/engine_base.h"
+// #include "engines/engine_base.h"
+#include <Windows.h>
+#include <MinHook.h>
+#include <chrono>
 
 using namespace std::chrono_literals;
 
@@ -17,8 +20,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
 
         MH_Initialize();
 
-        Engine *eg = Engine::DeduceEngineType();
-        eg->AttachHooks();
+        // Engine *eg = Engine::DeduceEngineType();
+        // eg->AttachHooks();
     }
     break;
     case DLL_PROCESS_DETACH: {
