@@ -1,7 +1,7 @@
 #pragma once
 #include "../engine_base.h"
 
-constexpr static Hook kernel32_hooks_[] = {
+static HookParam kernel32_hooks_[] = {
     // clang-format off
     "HS1@0:kernel32.dll:lstrlenA"_hcode,
     // lstrlenA(LPCSTR lpString)
@@ -33,7 +33,7 @@ constexpr static Hook kernel32_hooks_[] = {
     // FoldStringW(DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest)
 };
 
-constexpr static Hook user32_hooks_[] = {
+static HookParam user32_hooks_[] = {
     "HA1*@0:user32.dll:CharNextA"_hcode,
     // CharNextA(LPCTSTR lpsz)
     "HW1*@0:user32.dll:CharNextW"_hcode,
@@ -64,14 +64,14 @@ constexpr static Hook user32_hooks_[] = {
     // GetTabbedTextExtentW(HDC hdc, LPCWSTR lpString, int chCount, int nTabPositions, const LPINT lpnTabStopPositions)
 };
 
-constexpr static Hook oleaut32_hooks_[] = {
+static HookParam oleaut32_hooks_[] = {
     "HQ1@0:OLEAUT32.dll:SysAllocString"_hcode,
     // SysAllocString(const OLECHAR* psz)
     "HQ1:2@0:OLEAUT32.dll:SysAllocStringLen"_hcode
     // SysAllocStringLen(const OLECHAR* pch, unsigned int cch)
 };
 
-constexpr static Hook gdi32_hooks_[] = {
+static HookParam gdi32_hooks_[] = {
     "HS2:3@0:gdi32.dll:GetTextExtentPoint32A"_hcode,
     // GetTextExtentPoint32A(HDC hdc, LPCSTR lpString, int c, LPSIZE psizl)
     "HS2:3@0:gdi32.dll:GetTextExtentPointA"_hcode,

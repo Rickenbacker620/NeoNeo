@@ -1,6 +1,5 @@
 #pragma once
 
-#include <MinHook.h>
 #include <Windows.h>
 #include <bit>
 #include <iostream>
@@ -98,3 +97,13 @@ public:
         return std::bit_cast<T>(address);
     }
 };
+
+inline struct
+{
+    inline static BYTE DUMMY[100];
+    template <typename T> operator T *()
+    {
+        static_assert(sizeof(T) < sizeof(DUMMY));
+        return (T *)DUMMY;
+    }
+} DUMMY;

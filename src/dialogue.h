@@ -45,13 +45,12 @@ class DialoguePool
     INeoOutput &output_;
     std::vector<std::unique_ptr<Dialogue>> dialogues_;
     std::chrono::milliseconds flush_timeout_;
+    inline static DialoguePool *instance_;
 
   public:
-    static DialoguePool getInstance(INeoOutput &output, unsigned int flush_timeout)
-    {
-        return DialoguePool(output, flush_timeout);
-    }
     DialoguePool(INeoOutput &output, unsigned int flush_timeout);
+    static void Init(INeoOutput &output, unsigned int flush_timeout);
+    static void Push(std::string id, std::string encoding, char buffer);
     void PushTextToDialogue(std::string id, std::string encoding, char buffer);
     void Start();
 };

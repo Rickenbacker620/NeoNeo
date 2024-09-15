@@ -1,6 +1,5 @@
 #include "hook_param.h"
 #include "common.h"
-#include <fmt/core.h>
 #include <regex>
 
 HookParam::HookParam(std::string_view hcode)

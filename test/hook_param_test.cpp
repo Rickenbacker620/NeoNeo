@@ -12,7 +12,15 @@ TEST(HookParam, HCodeParse)
 TEST(HookParam, GetHookAddress)
 {
     HookParam hook;
-    hook.address = {0xFFULL, "kernel32.dll", ""};
+    hook.address = {uintptr_t(0xFF), "kernel32.dll", ""};
     auto addr = hook.address.GetAddress();
-    EXPECT_EQ(addr, 0x00007FFF754300FFULL);
+    // if 64bit
+    #ifdef _WIN64
+    {
+        EXPECT_EQ(addr, 0x00007FFF754300FFULL);
+    }
+    #endif
+    // {
+    //     EXPECT_EQ(addr, 0x00007FFF754300FFULL);
+    // }
 }

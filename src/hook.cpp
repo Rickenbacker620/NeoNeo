@@ -3,24 +3,13 @@
 #include "server.h"
 #include <ctre.hpp>
 #include <fmt/core.h>
-
-address_t HookAddress::GetAddress() const
-{
-    auto handle = GetModuleHandle(std::string{module}.c_str());
-    address_t result{};
-    if (!function.empty())
-    {
-        result = GetProcAddress(handle, std::string{function}.c_str());
-    }
-    else
-    {
-        result = handle;
-    }
-    return result + offset;
-}
+#include <MinHook.h>
+#include <Windows.h>
 
 size_t Hook::GetTextLength(address_t base, address_t text_addr) const
 {
+    auto &attribute_ = this->param_.attribute;
+    auto &text_offset_ = this->param_.text_offset;
     // lambda to get the length of a null-terminated string
     auto GetNullTerminatedLength = [&](address_t addr) -> size_t {
         return attribute_ & USING_UTF16 ? std::wcslen(std::bit_cast<const wchar_t *>(addr)) * 2
@@ -73,6 +62,8 @@ size_t Hook::GetTextLength(address_t base, address_t text_addr) const
 
 address_t Hook::GetTextAddress(address_t base) const
 {
+    auto &text_offset_ = this->param_.text_offset;
+
     address_t address{};
 
     // for character, data is right on stack, add the 1st offset to get a stack address
@@ -89,6 +80,7 @@ address_t Hook::GetTextAddress(address_t base) const
 
 address_t Hook::GetTextContext(address_t base) const
 {
+    auto &text_offset_ = this->param_.text_offset;
 
     address_t context{};
 
@@ -102,6 +94,7 @@ address_t Hook::GetTextContext(address_t base) const
 
 std::string Hook::GetName() const
 {
+    auto &address_ = this->param_.address;
     std::string name = fmt::format("{:p}", (void *)address_.offset);
     if (!address_.module.empty())
     {
@@ -114,17 +107,6 @@ std::string Hook::GetName() const
     return name;
 }
 
-void decodeAsUTF8(void *buffer, size_t length)
-{
-    for (size_t i = 0; i < length; i++)
-    {
-        if (((char *)buffer)[i] == 0x81)
-        {
-            ((char *)buffer)[i] = 0x5C;
-        }
-    }
-}
-
 void Hook::Send(address_t base)
 {
     auto getBufferHex = [&](std::vector<char> &buffer) -> std::string {
@@ -135,6 +117,10 @@ void Hook::Send(address_t base)
         }
         return strDebug;
     };
+
+    auto &attribute_ = this->param_.attribute;
+    auto &text_offset_ = this->param_.text_offset;
+    auto &address_ = this->param_.address;
 
     auto hook_addr = address_.GetAddress();
 
@@ -170,16 +156,14 @@ void Hook::Send(address_t base)
                                    1234,                          // process id
                                    (void *)address_.GetAddress(), // hook address
                                    (void *)text_context,          // text context
-                                   (void *)0,                      // text context2
-                                   encoding                      // encoding
+                                   (void *)0,                     // text context2
+                                   encoding                       // encoding
     );
 
     if (text_length == 2)
     {
-        // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + 1)));
-        // Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
-        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address)));
-        Dialogue::PushTextToDialogue(dialogue_id, *(static_cast<char *>(text_address + intptr_t{1})));
+        DialoguePool::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
+        DialoguePool::Push(dialogue_id, encoding, *(static_cast<char *>(text_address)));
     }
     else
     {
@@ -187,7 +171,7 @@ void Hook::Send(address_t base)
         std::memcpy(temp, text_address, text_length);
         for (size_t i = 0; i < text_length; i++)
         {
-            Dialogue::PushTextToDialogue(dialogue_id, temp[i]);
+            DialoguePool::Push(dialogue_id, encoding, temp[i]);
         }
     }
 
@@ -285,6 +269,7 @@ bool Hook::Attach()
         0xc3                    // ret ; basically absolute jmp to @original
     };
     int this_offset = 9, send_offset = 14, original_offset = 24;
+    auto &address_ = this->param_.address;
 
     VirtualProtect((LPVOID)(0x75BE0410), 10, PAGE_EXECUTE_READWRITE, DUMMY);
     VirtualProtect((LPVOID)(&trampoline), 40, PAGE_EXECUTE_READWRITE, DUMMY);
@@ -315,6 +300,7 @@ bool Hook::Attach()
 
 void Hook::Detach()
 {
+    auto& address_ = this->param_.address;
     auto address = address_.GetAddress();
     MH_DisableHook(address);
     MH_RemoveHook(address);

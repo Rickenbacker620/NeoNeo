@@ -119,3 +119,14 @@ void DialoguePool::Start()
         }
     }).detach();
 }
+
+void DialoguePool::Init(INeoOutput &output, unsigned int flush_timeout)
+{
+    instance_ = new DialoguePool(output, flush_timeout);
+}
+
+void DialoguePool::Push(std::string id, std::string encoding, char buffer)
+{
+    instance_->PushTextToDialogue(id, encoding, buffer);
+}
+
