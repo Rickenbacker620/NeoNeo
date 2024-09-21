@@ -12,10 +12,11 @@ PCEngine::PCEngine() : Engine{"PC"}
     //     hooks_.push_back(h);
     // }
 
-    for (auto &h : gdi32_hooks_)
-    {
-        hooks_.push_back(Hook(h));
-    }
+    hooks_.push_back(Hook("HW2@0:gdi32.dll:GetGlyphOutlineW"_hcode));
+    // for (auto &h : gdi32_hooks_)
+    // {
+    //     hooks_.push_back(Hook("HW2@0:gdi32.dll:GetGlyphOutlineW"_hcode));
+    // }
 
     // if (GetModuleHandle("OLEAUT32.dll"))
     // {

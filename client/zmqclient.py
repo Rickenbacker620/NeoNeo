@@ -2,10 +2,10 @@ import zmq
 
 context = zmq.Context()
 socket = context.socket(zmq.SUB)  # Subscriber socket
-socket.connect("tcp://localhost:5556")
+socket.connect("tcp://localhost:12345")
 
 # Subscribe to all topics
-socket.setsockopt_string(zmq.SUBSCRIBE, "topic1")
+socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
 print("PUB Client is waiting for messages...")
 

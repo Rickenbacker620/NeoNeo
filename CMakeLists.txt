@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8...3.13)
 
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    set(VCPKG_TARGET_TRIPLET "x64-windows-static-md")
+else()
+    set(VCPKG_TARGET_TRIPLET "x86-windows-static-md")
+endif()
+
 project(NeoNeo
         VERSION 0.0.1
         DESCRIPTION "A Neo Galgame Translator"
@@ -7,9 +13,9 @@ project(NeoNeo
 
 enable_testing()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(ctre CONFIG REQUIRED)

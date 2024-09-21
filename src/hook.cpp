@@ -144,7 +144,7 @@ void Hook::Send(address_t base)
     }
     else if (attribute_ & USING_UTF16)
     {
-        encoding = "UTF-16";
+        encoding = "UTF-16LE";
     }
     else
     {
@@ -162,8 +162,8 @@ void Hook::Send(address_t base)
 
     if (text_length == 2)
     {
-        DialoguePool::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
         DialoguePool::Push(dialogue_id, encoding, *(static_cast<char *>(text_address)));
+        DialoguePool::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
     }
     else
     {

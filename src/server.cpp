@@ -20,6 +20,7 @@ std::string NeoServer::FormatMessage(const std::string &id, const std::string &t
 
 void NeoServer::outputDialogue(const std::string &id, const std::string &text)
 {
+    std::cout << "out" << std::endl;
     auto output = FormatMessage(id, text);
     std::cout << output << std::endl;
     zmq::message_t message(static_cast<void*>(output.data()), output.size());

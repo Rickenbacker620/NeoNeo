@@ -79,7 +79,8 @@ void Dialogue::Flush()
 {
     if (!buffer_.empty() && NeedFlush())
     {
-        output_.outputDialogue(id_, GetUTF8Text());
+        auto outputText = GetUTF8Text();
+        output_.outputDialogue(id_, outputText);
         buffer_.clear();
     }
 }
@@ -123,6 +124,7 @@ void DialoguePool::Start()
 void DialoguePool::Init(INeoOutput &output, unsigned int flush_timeout)
 {
     instance_ = new DialoguePool(output, flush_timeout);
+    instance_->Start();
 }
 
 void DialoguePool::Push(std::string id, std::string encoding, char buffer)
