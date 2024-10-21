@@ -11,6 +11,12 @@ add_executable(server_test server_test.cpp)
 target_link_libraries(server_test PRIVATE server GTest::gtest GTest::gtest_main)
 gtest_discover_tests(server_test)
 
-add_executable(hook_param_test hook_param_test.cpp)
-target_link_libraries(hook_param_test PRIVATE hook_param GTest::gtest GTest::gtest_main)
-gtest_discover_tests(hook_param_test)
+add_executable(hook_param_test)
+target_sources(hook_param_test
+        PUBLIC
+        FILE_SET CXX_MODULES
+        FILES
+        hook_param_test.ixx
+)
+
+target_link_libraries(hook_param_test PRIVATE neohooklibs GTest::gtest GTest::gtest_main)
