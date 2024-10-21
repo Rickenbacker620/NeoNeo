@@ -23,14 +23,14 @@ void SimulatePusher()
     auto DialogueB2 = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
 
     size_t sentence_length = 46;
-    DialoguePool pool(mock_output, 1000);
-    DialoguePool::Init(mock_output, 1000);
+    Sink pool(mock_output, 1000);
+    Sink::Init(mock_output, 1000);
     pool.Start();
 
     for (size_t i = 0; i < sentence_length; i++)
     {
-        DialoguePool::Push("DialogueA", "UTF-8", DialogueA1[i]);
-        DialoguePool::Push("DialogueB", "UTF-8", DialogueB1[i]);
+        Sink::Push("DialogueA", "UTF-8", DialogueA1[i]);
+        Sink::Push("DialogueB", "UTF-8", DialogueB1[i]);
         // pool.PushTextToDialogue("DialogueA", "UTF-8", DialogueA1[i]);
         // pool.PushTextToDialogue("DialogueB", "UTF-8", DialogueB1[i]);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -40,8 +40,8 @@ void SimulatePusher()
 
     for (size_t i = 0; i < 46; i++)
     {
-        DialoguePool::Push("DialogueA", "UTF-8", DialogueA2[i]);
-        DialoguePool::Push("DialogueB", "UTF-8", DialogueB2[i]);
+        Sink::Push("DialogueA", "UTF-8", DialogueA2[i]);
+        Sink::Push("DialogueB", "UTF-8", DialogueB2[i]);
         // pool.PushTextToDialogue("DialogueA", "UTF-8", DialogueA2[i]);
         // pool.PushTextToDialogue("DialogueB", "UTF-8", DialogueB2[i]);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));

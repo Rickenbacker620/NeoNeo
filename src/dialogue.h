@@ -39,16 +39,16 @@ class Dialogue
     std::string GetUTF8Text();
 };
 
-class DialoguePool
+class Sink
 {
   private:
     INeoOutput &output_;
     std::vector<std::unique_ptr<Dialogue>> dialogues_;
     std::chrono::milliseconds flush_timeout_;
-    inline static DialoguePool *instance_;
+    inline static Sink *instance_;
 
   public:
-    DialoguePool(INeoOutput &output, unsigned int flush_timeout);
+    Sink(INeoOutput &output, unsigned int flush_timeout);
     static void Init(INeoOutput &output, unsigned int flush_timeout);
     static void Push(std::string id, std::string encoding, char buffer);
     void PushTextToDialogue(std::string id, std::string encoding, char buffer);

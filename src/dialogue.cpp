@@ -85,12 +85,12 @@ void Dialogue::Flush()
     }
 }
 
-DialoguePool::DialoguePool(INeoOutput &output, unsigned int flush_timeout)
+Sink::Sink(INeoOutput &output, unsigned int flush_timeout)
     : output_(output), flush_timeout_(flush_timeout)
 {
 }
 
-void DialoguePool::PushTextToDialogue(std::string id, std::string encoding, char buffer)
+void Sink::PushTextToDialogue(std::string id, std::string encoding, char buffer)
 {
     for (const auto &dialogue : dialogues_)
     {
@@ -107,7 +107,7 @@ void DialoguePool::PushTextToDialogue(std::string id, std::string encoding, char
     return;
 }
 
-void DialoguePool::Start()
+void Sink::Start()
 {
     std::thread([this] {
         while (true)
@@ -121,13 +121,13 @@ void DialoguePool::Start()
     }).detach();
 }
 
-void DialoguePool::Init(INeoOutput &output, unsigned int flush_timeout)
+void Sink::Init(INeoOutput &output, unsigned int flush_timeout)
 {
-    instance_ = new DialoguePool(output, flush_timeout);
+    instance_ = new Sink(output, flush_timeout);
     instance_->Start();
 }
 
-void DialoguePool::Push(std::string id, std::string encoding, char buffer)
+void Sink::Push(std::string id, std::string encoding, char buffer)
 {
     instance_->PushTextToDialogue(id, encoding, buffer);
 }

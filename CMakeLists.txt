@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8...3.13)
 
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-    set(VCPKG_TARGET_TRIPLET "x64-windows-static-md")
-else()
-    set(VCPKG_TARGET_TRIPLET "x86-windows-static-md")
-endif()
+#if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+# set(VCPKG_TARGET_TRIPLET "x64-windows-static-md")
+#else()
+   set(VCPKG_TARGET_TRIPLET "x86-windows-static-md")
+#endif()
 
 project(NeoNeo
         VERSION 0.0.1

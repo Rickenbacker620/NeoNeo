@@ -22,7 +22,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
         // REVIEW main loop
         // auto out = TempOutput();
         auto out = new NeoServer();
-        DialoguePool::Init(*out, 500);
+        Sink::Init(*out, 500);
         MH_Initialize();
 
         Engine *eg = Engine::DeduceEngineType();
@@ -36,21 +36,3 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     }
     return TRUE;
 }
-// BOOL APIENTRY DllMain(HMODULE hModule,
-//     DWORD  ul_reason_for_call,
-//     LPVOID lpReserved
-// )
-// {
-//     switch (ul_reason_for_call)
-//     {
-//     case DLL_PROCESS_ATTACH:
-//         /*我们的代码，注入DLL后会执行*/
-//         MH_Initialize();
-//         MessageBox(0, "Wow", "Wow123", NULL);
-//     case DLL_THREAD_ATTACH:
-//     case DLL_THREAD_DETACH:
-//     case DLL_PROCESS_DETACH:
-//         break;
-//     }
-//     return TRUE;
-// }

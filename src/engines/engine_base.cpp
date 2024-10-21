@@ -2,8 +2,6 @@
 #include "engine_base.h"
 #include <vector>
 
-
-
 void Engine::AttachHooks()
 {
     std::cout << "Injecting ----" << name_ << std::endl;
@@ -13,6 +11,7 @@ void Engine::AttachHooks()
         std::cout << hook.GetName() << "attached" << std::endl;
     }
 }
+
 Engine::~Engine()
 {
     std::cout << "Detaching ----" << name_ << std::endl;
@@ -20,4 +19,9 @@ Engine::~Engine()
     {
         hook.Detach();
     }
+}
+
+void Engine::StartListenController()
+{
+    controller_->Start();
 }
