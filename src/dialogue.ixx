@@ -1,7 +1,6 @@
 module;
 
 #include <Windows.h>
-#include <fmt/format.h>
 
 export module dialogue;
 
@@ -13,6 +12,7 @@ import <optional>;
 import <string>;
 import <vector>;
 import <thread>;
+import <format>;
 
 import neo_output;
 
@@ -35,21 +35,21 @@ export class Dialogue {
     Dialogue() = delete;
     Dialogue(std::string id, std::string encoding, INeoOutput& output,
              const std::chrono::milliseconds& flush_timeout = std::chrono::milliseconds(500))
-        : id_(id), encoding_(encoding), output_(output), flush_timeout_(flush_timeout) {}
+        : id_(std::move(id)), encoding_(std::move(encoding)), output_(output), flush_timeout_(flush_timeout) {}
 
     void PushText(char buffer) {
         buffer_.push_back(buffer);
         last_received_time_ = std::chrono::steady_clock::now();
     }
 
-    bool NeedFlush() {
+    bool NeedFlush () const{
         return last_received_time_ + flush_timeout_ < std::chrono::steady_clock::now();
     }
 
     std::string GetHexText() {
         std::string strDebug;
         for (size_t i = 0; i < buffer_.size(); i++) {
-            strDebug += fmt::format("{:02x} ", (unsigned char)buffer_[i]);
+            strDebug += std::format("{:02x} ", (unsigned char)buffer_[i]);
         }
         return strDebug;
     }

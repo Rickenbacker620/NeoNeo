@@ -1,6 +1,5 @@
-module;
-#include <string>
 export module neo_output;
+import <string>;
 
 export class INeoOutput {
 public:

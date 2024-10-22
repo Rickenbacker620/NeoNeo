@@ -87,6 +87,7 @@ export class address_t {
         return *reinterpret_cast<address_t*>(address);
     }
 
+
     template <PointerOrUintptr T>
     constexpr operator T() const {
         return std::bit_cast<T>(address);

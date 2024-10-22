@@ -1,19 +1,12 @@
-
 #include <MinHook.h>
-
 #include <Windows.h>
 
 import <chrono>;
 import <iostream>;
-import <thread>;
 
-import server;
 import engine_base;
 import pcengine;
 import dialogue;
-
-
-using namespace std::chrono_literals;
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
 {
@@ -25,21 +18,19 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH: {
-        // REVIEW main loop
-         auto out = new TempOutput();
-//        auto out = new NeoServer();
+        auto out = new TempOutput();
         Sink::Init(*out, 500);
-        MH_Initialize();
 
+        MH_Initialize();
         Engine *eg = new PCEngine();
+
         eg->AttachHooks();
-//        MessageBoxA(NULL, "Hello, World!", "Hello, World!", MB_OK);
     }
-        break;
+    break;
     case DLL_PROCESS_DETACH: {
         MH_Uninitialize();
     }
-        break;
+    break;
     }
     return TRUE;
 }

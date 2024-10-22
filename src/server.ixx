@@ -1,11 +1,13 @@
+module;
+
+#include <zmq.hpp>
+
 export module server;
 
 import <iostream>;
 import <thread>;
 import <vector>;
 import <string>;
-import <zmq.hpp>;
-import <fmt/core.h>;
 
 // Import local modules
 import neo_output;
@@ -18,7 +20,7 @@ export class NeoServer : public INeoOutput {
     constexpr static int SERVER_PORT = 12345;
 
     std::string FormatMessage(const std::string& id, const std::string& text) {
-        return fmt::format("[{}]{}", id, text);
+        return std::format("[{}]{}", id, text);
     }
 
   public:

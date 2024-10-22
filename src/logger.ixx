@@ -1,8 +1,6 @@
 export module logger;
 
 import <iostream>;
-
-// Import the local module for INeoOutput
 import neo_output;
 
 export class Logger : public INeoOutput {
