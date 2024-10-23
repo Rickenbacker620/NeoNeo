@@ -2,7 +2,18 @@
 #target_link_libraries(dialogue_test PRIVATE dialogue GTest::gtest GTest::gtest_main)
 #gtest_discover_tests(dialogue_test)
 #
-#add_executable(address_t_test address_t_test.cpp)
+#add_executable(address_t_test)
+#
+#target_sources(address_t_test
+#        PUBLIC
+#        FILE_SET CXX_MODULES
+#        BASE_DIRS
+#        ${CMAKE_SOURCE_DIR}
+#        FILES
+#        address_t_test.ixx
+#        ../src/common.ixx
+#)
+#target_link_libraries(address_t_test PRIVATE GTest::gtest GTest::gtest_main)
 #target_include_directories(address_t_test PRIVATE ${CMAKE_SOURCE_DIR}/src)
 #target_link_libraries(address_t_test PRIVATE GTest::gtest GTest::gtest_main)
 #gtest_discover_tests(address_t_test)

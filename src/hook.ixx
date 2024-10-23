@@ -11,8 +11,9 @@ import <optional>;
 import <unordered_map>;
 import <utility>;
 import <chrono>;
+import <functional>;
+import <iostream>;
 
-import dialogue;
 import common;
 import hook_param;
 
@@ -22,11 +23,12 @@ export class Hook
 {
     using TimeStamp = std::chrono::time_point<std::chrono::steady_clock>;
     using TimeStampBuffer = std::pair<TimeStamp, std::vector<char>>;
+
   private:
     HookParam param_{};
     BYTE trampoline[40]{};
-    std::chrono::milliseconds flush_timeout_;
     std::unordered_map<address_t, TimeStampBuffer, decltype(addr_hash)> buffer_{};
+    inline static auto FLUSH_TIMEOUT = std::chrono::milliseconds(500);
 
     size_t GetTextLength(address_t base, address_t text_addr) const
     {
@@ -116,22 +118,23 @@ export class Hook
         return name;
     }
 
-//    void NeedFlush()
-//    {
-//        for (auto &[context, buffer] : buffer_)
-//        {
-//            std::string encoding = param_.attribute & USING_UTF8 ? "UTF-8" : param_.attribute & USING_UTF16 ? "UTF-16LE" : "Shift-JIS";
-//            std::string dialogue_id = std::format("{:s}\x02{:d}\x02{:p}\x02{:p}\x02{:p}\x02{:s}", this->GetName(), 1234,
-//                                                  (void *)param_.address.GetAddress(), (void *)context.GetAddress(), (void *)0, encoding);
-//            Sink::Flush(dialogue_id, encoding, buffer);
-//        }
-//        buffer_.clear();
-//    }
+    bool ReadyToFlush (const TimeStampBuffer& buffer) const{
+        return buffer.first + FLUSH_TIMEOUT < std::chrono::steady_clock::now() && !buffer.second.empty();
+    }
 
-    void FlushReadyBuffers() {
+    using OutputHander = std::function<void(const std::vector<char>&, const std::string&)>;
+    void FlushReadyBuffers(OutputHander handler) {
         // for (auto &[context, buffer] : buffer) {
         for (auto &[context, buffer]: buffer_) {
+            if (ReadyToFlush(buffer)) {
+                // FIXME may need to lock here
+                auto buffer_copy = buffer.second;
+                buffer.second.clear();
 
+                auto& attribute_ = this->param_.attribute;
+                std::string encoding = attribute_ & USING_UTF8 ? "UTF-8" : attribute_ & USING_UTF16 ? "UTF-16LE" : "Shift-JIS";
+                handler(buffer_copy, encoding);
+            }
         }
     }
 
@@ -160,8 +163,8 @@ export class Hook
 
         if (text_length == 2)
         {
-            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address)));
-            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
+//            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address)));
+//            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
             if (buffer_.find(text_context) == buffer_.end())
             {
                 buffer_[text_context] = TimeStampBuffer{std::chrono::steady_clock::now(), std::vector<char>(30)};
@@ -176,7 +179,9 @@ export class Hook
             std::memcpy(temp, text_address, text_length);
             for (size_t i = 0; i < text_length; i++)
             {
-                Sink::Push(dialogue_id, encoding, temp[i]);
+//                buffer_[text_context].first = std::chrono::steady_clock::now();
+//
+//                Sink::Push(dialogue_id, encoding, temp[i]);
             }
         }
     }

@@ -19,10 +19,7 @@ target_sources(neohooklibs
         FILE_SET CXX_MODULES FILES
         engine_base.ixx
         hook.ixx
-        dialogue.ixx
         hook_param.ixx
-        neo_output.ixx
-        logger.ixx
         common.ixx
         pcengine.ixx
 )

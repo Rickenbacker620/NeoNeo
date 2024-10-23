@@ -1,12 +1,10 @@
 #include <MinHook.h>
-#include <Windows.h>
 
 import <chrono>;
 import <iostream>;
 
 import engine_base;
 import pcengine;
-import dialogue;
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
 {
@@ -18,13 +16,11 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH: {
-        auto out = new TempOutput();
-        Sink::Init(*out, 500);
-
         MH_Initialize();
-        Engine *eg = new PCEngine();
-
-        eg->AttachHooks();
+        Engine *engine = new PCEngine([](const std::string &msg) { std::cout << msg << std::endl; },
+                                      [](const std::string &msg) { std::cout << msg << std::endl; });
+        engine->AttachHooks();
+        engine->StartHookWatcher();
     }
     break;
     case DLL_PROCESS_DETACH: {
