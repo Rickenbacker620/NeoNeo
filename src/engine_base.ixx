@@ -63,7 +63,7 @@ export class Engine
 
     virtual ~Engine()
     {
-        std::cout << "Detaching ----" << name_ << std::endl;
+        control_out_("Engine shutting down");
         for (auto &hook : hooks_)
         {
             hook.Detach();
@@ -92,7 +92,7 @@ export class Engine
 
     void AttachHooks()
     {
-        ControlLog("Injecting ----");
+        ControlLog("Injecting ---- {}", name_);
         for (auto &hook : hooks_)
         {
             hook.Attach();

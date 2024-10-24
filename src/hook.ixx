@@ -163,11 +163,10 @@ export class Hook
 
         if (text_length == 2)
         {
-//            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address)));
-//            Sink::Push(dialogue_id, encoding, *(static_cast<char *>(text_address + 1)));
             if (buffer_.find(text_context) == buffer_.end())
             {
-                buffer_[text_context] = TimeStampBuffer{std::chrono::steady_clock::now(), std::vector<char>(30)};
+                buffer_[text_context] = TimeStampBuffer{std::chrono::steady_clock::now(), std::vector<char>()};
+                buffer_[text_context].second.reserve(30);
             }
             buffer_[text_context].first = std::chrono::steady_clock::now();
             buffer_[text_context].second.push_back(*(static_cast<char *>(text_address)));
