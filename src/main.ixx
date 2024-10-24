@@ -17,8 +17,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     {
     case DLL_PROCESS_ATTACH: {
         MH_Initialize();
-        Engine *engine = new PCEngine([](const std::string &msg) { std::cout << msg << std::endl; },
-                                      [](const std::string &msg) { std::cout << msg << std::endl; });
+        Engine *engine = new PCEngine();
         engine->AttachHooks();
         engine->StartHookWatcher();
     }

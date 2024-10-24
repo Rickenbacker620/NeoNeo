@@ -18,5 +18,6 @@ target_sources(neohooklibs
         hook_param.ixx
         common.ixx
         pcengine.ixx
+        console.ixx
 )
 target_link_libraries(neohooklibs PUBLIC cppzmq minhook::minhook)

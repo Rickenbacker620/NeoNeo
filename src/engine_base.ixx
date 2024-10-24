@@ -9,6 +9,7 @@ import <thread>;
 import <utility>;
 
 import hook;
+import console;
 
 std::string BufferToUTF8(const std::vector<char>& buffer, const std::string& encoding) {
 
@@ -52,18 +53,17 @@ export class Engine
   protected:
     const char *name_;
     std::vector<Hook> hooks_;
-    MessageHandler control_out_;
-    MessageHandler lines_out_;
+//    MessageHandler control_out_;
+//    MessageHandler lines_out_;
 
   public:
-    Engine(const char *name, MessageHandler&& control_out, MessageHandler&& lines_out)
-        : name_{name}, control_out_{std::move(control_out)}, lines_out_{std::move(lines_out)}
+    Engine(const char* name) : name_{name}
     {
     }
 
     virtual ~Engine()
     {
-        control_out_("Engine shutting down");
+        ConsoleOut::log("Engine shutting down");
         for (auto &hook : hooks_)
         {
             hook.Detach();
@@ -77,7 +77,7 @@ export class Engine
               for (auto& hook : hooks_) {
                   hook.FlushReadyBuffers([this](const auto& buffer, const auto& encoding) {
                       std::string s = BufferToUTF8(buffer, encoding);
-                      lines_out_(s);
+                      LinesOut::log(s);
                   });
               }
           }
@@ -87,7 +87,7 @@ export class Engine
     template <typename... Args>
     void ControlLog(std::format_string<Args...> fmt, Args&&... args) {
         auto s = std::format(fmt, args...);
-        control_out_(s);
+        ConsoleOut::log(s);
     }
 
     void AttachHooks()
