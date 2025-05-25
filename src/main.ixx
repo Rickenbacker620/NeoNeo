@@ -2,9 +2,9 @@
 
 import <chrono>;
 import <iostream>;
-
 import engine_base;
 import pcengine;
+import console;
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
 {
@@ -17,6 +17,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
     {
     case DLL_PROCESS_ATTACH: {
         MH_Initialize();
+        NeoServer::Init();
         Engine *engine = new PCEngine();
         engine->AttachHooks();
         engine->StartHookWatcher();
@@ -26,6 +27,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID)
         MH_Uninitialize();
     }
     break;
+    default:
+        break;
     }
     return TRUE;
 }

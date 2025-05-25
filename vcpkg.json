@@ -1,7 +1,8 @@
 {
   "dependencies": [
+    "cppzmq",
     "gtest",
     "minhook",
-    "cppzmq"
+    "mecab"
   ]
 }

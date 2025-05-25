@@ -14,7 +14,7 @@ import console;
 std::string BufferToUTF8(const std::vector<char>& buffer, const std::string& encoding) {
 
     if (encoding == "UTF-8") {
-        return std::string(buffer.begin(), buffer.end());
+        return {buffer.begin(), buffer.end()};
     }
 
     if (encoding == "UTF-16LE") {
@@ -46,18 +46,14 @@ std::string BufferToUTF8(const std::vector<char>& buffer, const std::string& enc
     return "";
 }
 
-export using MessageHandler = std::function<void(std::string message)>;
-
 export class Engine
 {
   protected:
     const char *name_;
     std::vector<Hook> hooks_;
-//    MessageHandler control_out_;
-//    MessageHandler lines_out_;
 
   public:
-    Engine(const char* name) : name_{name}
+    explicit Engine(const char* name) : name_{name}
     {
     }
 
@@ -75,9 +71,9 @@ export class Engine
           while (true) {
               std::this_thread::sleep_for(std::chrono::milliseconds(10));
               for (auto& hook : hooks_) {
-                  hook.FlushReadyBuffers([this](const auto& buffer, const auto& encoding) {
+                  hook.FlushReadyBuffers([this](const std::string& hookName, const auto& buffer, const auto& encoding) {
                       std::string s = BufferToUTF8(buffer, encoding);
-                      LinesOut::log(s);
+                      LinesOut::log(hookName, s);
                   });
               }
           }
@@ -86,18 +82,19 @@ export class Engine
 
     template <typename... Args>
     void ControlLog(std::format_string<Args...> fmt, Args&&... args) {
-        auto s = std::format(fmt, args...);
+        auto s = std::format(fmt, std::forward<Args>(args)...);
         ConsoleOut::log(s);
     }
 
     void AttachHooks()
     {
-        ControlLog("Injecting ---- {}", name_);
+        ControlLog("[Hook] Start Attaching...");
         for (auto &hook : hooks_)
         {
             hook.Attach();
-            std::cout << hook.GetName() << "attached" << std::endl;
+            ControlLog("[Hook] Attached: {}", hook.GetName());
         }
+        ControlLog("[Hook] Finished Attaching");
     }
 
 };

@@ -122,9 +122,8 @@ export class Hook
         return buffer.first + FLUSH_TIMEOUT < std::chrono::steady_clock::now() && !buffer.second.empty();
     }
 
-    using OutputHander = std::function<void(const std::vector<char>&, const std::string&)>;
-    void FlushReadyBuffers(OutputHander handler) {
-        // for (auto &[context, buffer] : buffer) {
+    using OutputHander = std::function<void(const std::string&, const std::vector<char>&, const std::string&)>;
+    void FlushReadyBuffers(const OutputHander& handler) {
         for (auto &[context, buffer]: buffer_) {
             if (ReadyToFlush(buffer)) {
                 // FIXME may need to lock here
@@ -133,7 +132,7 @@ export class Hook
 
                 auto& attribute_ = this->param_.attribute;
                 std::string encoding = attribute_ & USING_UTF8 ? "UTF-8" : attribute_ & USING_UTF16 ? "UTF-16LE" : "Shift-JIS";
-                handler(buffer_copy, encoding);
+                handler(GetName(), buffer_copy, encoding);
             }
         }
     }

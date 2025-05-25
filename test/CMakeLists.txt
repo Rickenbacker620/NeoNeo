@@ -31,3 +31,17 @@
 #)
 #
 #target_link_libraries(hook_param_test PRIVATE neohooklibs GTest::gtest GTest::gtest_main)
+
+
+add_executable(wordseg_test wordseg_test.ixx)
+
+# target_sources(wordseg_test
+#        PUBLIC
+#        FILE_SET CXX_MODULES
+#        FILES
+#        wordseg_test.ixx
+# )
+
+target_compile_options(wordseg_test PRIVATE /utf-8)
+
+target_link_libraries(wordseg_test PUBLIC mecab::mecab GTest::gtest GTest::gtest_main)

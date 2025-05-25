@@ -20,6 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 find_package(minhook CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(cppzmq CONFIG REQUIRED)
+find_package(Mecab CONFIG REQUIRED)
 
 include(GoogleTest)
 include(CTest)
